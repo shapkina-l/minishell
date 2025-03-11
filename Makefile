@@ -6,12 +6,12 @@
 #    By: lshapkin <lshapkin@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/08/09 11:15:57 by lshapkin          #+#    #+#              #
-#    Updated: 2025/03/05 17:24:27 by lshapkin         ###   ########.fr        #
+#    Updated: 2025/03/11 19:11:29 by lshapkin         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 CC := cc
-FLAGS := -Werror -Wextra -Wall -g 
+FLAGS := -g #-Werror -Wextra -Wall 
 NAME := minishell
 SRC := main.c execution/exec.c
 OBJ := $(SRC:.c=.o)
