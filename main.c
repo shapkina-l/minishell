@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lshapkin <lshapkin@student.42.fr>          +#+  +:+       +#+        */
+/*   By: lshapkin <lshapkin@student.42berlin.de>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/05 16:29:46 by lshapkin          #+#    #+#             */
-/*   Updated: 2025/03/11 19:33:26 by lshapkin         ###   ########.fr       */
+/*   Updated: 2025/03/12 18:39:16 by lshapkin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,11 +64,72 @@ char	*make_cmd(char **cmd_path, char *argv)
 // 	free(cmd_path);
 // }
 
+//Temporary free for exec tests
+void free_exec(t_data *data)
+{
+	int i = 0;
+	while (data->args[i])
+	{
+		free (data->args[i]);
+		i++;
+	}
+	free(data->args);
+	free(data->full_cmd);
+	free(data);
+}
+
+//Temporary free for pipe tests
+void free_pipes(t_data *data)
+{
+	int i = 0;
+	if (!data)
+		return;
+
+	// Free left command
+	if (data->left)
+	{
+		if (data->left->args)
+		{
+			while (data->left->args[i])
+			{
+				free(data->left->args[i]);
+				i++;
+			}
+			free(data->left->args);
+		}
+		free(data->left->full_cmd);
+		free(data->left);
+	}
+
+	// Free right command
+	i = 0;
+	if (data->right)
+	{
+		if (data->right->args)
+		{
+			while (data->right->args[i])
+			{
+				free(data->right->args[i]);
+				i++;
+			}
+			free(data->right->args);
+		}
+		free(data->right->full_cmd);
+		free(data->right);
+	}
+
+	free(data);
+}
+
 //Temporary data initialization for pipes test ps aux | grep bash
 void	tmp_fill_data(t_data *data, char *envp[])
 {
 	char	*path = envp_path(envp);
+	if (!path)
+		return ;
 	char	**cmd_path = ft_split(path, ':');
+	if (!cmd_path)
+		return;
 	char	*cmd1 = make_cmd(cmd_path, "ps");
 	char	*cmd2 = make_cmd(cmd_path, "grep");
 
@@ -102,18 +163,20 @@ int	main(int argc, char *argv[], char *envp[])
 	data = malloc(sizeof(t_data));
 	if (!data)
 		return (0);
-	data->left = malloc(sizeof(t_data)); //if!
-	data->right = malloc(sizeof(t_data)); //if!
+	data->left = malloc(sizeof(t_data));
+	if (!data->left)
+	{
+		free(data);
+		return (0);
+	}
+	data->right = malloc(sizeof(t_data));
+	if (!data->right)
+	{
+		free(data->left);
+		free(data);
+		return (0);
+	}
 	tmp_fill_data(data, envp);
 	execute(data, envp);
-
-	//int i = 0;
-	//while (data->args[i])
-	//{
-	//	free (data->args[i]);
-	//	i++;
-	//}
-	free(data->args);
-	free(data->full_cmd);
-	free(data);
+	free_pipes(data);
 }

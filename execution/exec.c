@@ -3,14 +3,58 @@
 /*                                                        :::      ::::::::   */
 /*   exec.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lshapkin <lshapkin@student.42.fr>          +#+  +:+       +#+        */
+/*   By: lshapkin <lshapkin@student.42berlin.de>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/05 16:43:30 by lshapkin          #+#    #+#             */
-/*   Updated: 2025/03/11 19:28:05 by lshapkin         ###   ########.fr       */
+/*   Updated: 2025/03/12 19:04:08 by lshapkin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../minishell.h"
+
+void	exec(t_data *data, char *envp[])
+{
+	int pid = fork();
+	if (pid < 0)
+    {
+        perror("fork");
+        exit(EXIT_FAILURE);
+    }
+	if (pid == 0)
+	{
+        execve(data->full_cmd, data->args, envp);
+        perror("execve");
+        exit(EXIT_FAILURE);
+    }
+	waitpid(pid, NULL, 0);
+	free_exec(data); //?
+}
+
+void	builtin(t_data *data, char *envp[])
+{
+	// 1 - echo with option -n
+	if (data->builtin_type == 1)
+		
+	// 2 - cd with only a relative or absolute path
+	else if (data->builtin_type == 2)
+		
+	// 3 - pwd with no options
+	else if (data->builtin_type == 3)
+		
+	// 4 - export with no options
+	else if (data->builtin_type == 4)
+		
+	// 5 - unset with no options
+	else if (data->builtin_type == 5)
+		
+	// 6 - env with no options or arguments
+	else if (data->builtin_type == 6)
+		
+	// 7 - exit with no options
+	else if (data->builtin_type == 7)
+		
+	
+}
 
 void	pipes(t_data *data, char *envp[])
 {
@@ -18,14 +62,24 @@ void	pipes(t_data *data, char *envp[])
 	int	pid1;
 	int	pid2;
 
-	pipe(fd);
+	if (pipe(fd) == -1)
+	{
+		perror("pipe");
+		exit(EXIT_FAILURE);
+	}
 	pid1 = fork();
+	if (pid1 < 0)
+	{
+		perror("fork");
+		exit(EXIT_FAILURE);
+	}
 	if (pid1 == 0)
 	{
 		dup2(fd[1], STDOUT_FILENO);
 		close(fd[0]);
 		close(fd[1]);
 		execute(data->left, envp);
+		exit(EXIT_FAILURE);
 	}
 	pid2 = fork();
 	if (pid2 == 0)
@@ -34,34 +88,26 @@ void	pipes(t_data *data, char *envp[])
 		close(fd[1]);
 		close(fd[0]);
 		execute(data->right, envp);
+		exit(EXIT_FAILURE);
 	}
 	close(fd[0]);
 	close(fd[1]);
 	waitpid(pid1, NULL, 0);
-	waitpid(pid2, NULL, 0);
+    waitpid(pid2, NULL, 0);
 }
 
 void	execute(t_data *data, char *envp[])
 {
 	if (!data)
-		return	;
+		return ;
 	//Execution of a single command
 	if (data->type == 1)
-	{
-		int pid = fork();
-		if (pid == 0)
-			execve(data->full_cmd, data->args, envp);
-		waitpid(pid, NULL, 0);
-	}
-	//Pipes
+		exec(data, envp);
+	//Pipes 
 	else if (data->type == 2)
-	{
 		pipes(data, envp);
-	}
-	//Redirection
-	//if (data->type == 3)
-	//{
-	//	
-	//}
+	//Builtins
+	else if (data->type == 4)
+		builtin(data, envp);
 }
 
