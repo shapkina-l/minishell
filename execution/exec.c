@@ -6,7 +6,7 @@
 /*   By: lshapkin <lshapkin@student.42berlin.de>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/05 16:43:30 by lshapkin          #+#    #+#             */
-/*   Updated: 2025/03/12 19:04:08 by lshapkin         ###   ########.fr       */
+/*   Updated: 2025/03/14 17:28:51 by lshapkin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,26 +34,25 @@ void	builtin(t_data *data, char *envp[])
 {
 	// 1 - echo with option -n
 	if (data->builtin_type == 1)
-		
+		ft_echo(data);
 	// 2 - cd with only a relative or absolute path
 	else if (data->builtin_type == 2)
-		
+		ft_cd(data);
 	// 3 - pwd with no options
 	else if (data->builtin_type == 3)
-		
+		ft_pwd();
 	// 4 - export with no options
 	else if (data->builtin_type == 4)
-		
+		ft_export(data, envp);
 	// 5 - unset with no options
 	else if (data->builtin_type == 5)
-		
+		ft_unset(data, envp);
 	// 6 - env with no options or arguments
 	else if (data->builtin_type == 6)
-		
+		ft_env(envp);
 	// 7 - exit with no options
 	else if (data->builtin_type == 7)
-		
-	
+		ft_exit();
 }
 
 void	pipes(t_data *data, char *envp[])

@@ -6,7 +6,7 @@
 /*   By: lshapkin <lshapkin@student.42berlin.de>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/05 16:30:03 by lshapkin          #+#    #+#             */
-/*   Updated: 2025/03/12 19:01:20 by lshapkin         ###   ########.fr       */
+/*   Updated: 2025/03/14 17:28:40 by lshapkin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,6 +18,8 @@
 # include <unistd.h>
 # include <stdio.h>
 # include <sys/wait.h>
+# include <limits.h>
+# include <sys/param.h>
 
 //types
 //execution - 1
@@ -46,5 +48,12 @@ typedef struct s_data
 
 void	execute(t_data *data, char *envp[]);
 void	free_exec(t_data *data); //temp
+int		ft_echo(t_data *data);
+int		ft_cd(t_data *data);
+int		ft_pwd();
+int		ft_export(t_data *data, char *envp[]);
+int		ft_unset(t_data *data, char *envp[]);
+int		ft_env(char *envp[]);
+int		ft_exit();
 
 #endif
