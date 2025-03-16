@@ -3,17 +3,17 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: lshapkin <lshapkin@student.42.fr>          +#+  +:+       +#+         #
+#    By: lshapkin <lshapkin@student.42berlin.de>    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/08/09 11:15:57 by lshapkin          #+#    #+#              #
-#    Updated: 2025/03/11 19:11:29 by lshapkin         ###   ########.fr        #
+#    Updated: 2025/03/16 15:16:17 by lshapkin         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 CC := cc
 FLAGS := -g #-Werror -Wextra -Wall 
 NAME := minishell
-SRC := main.c execution/exec.c
+SRC := tmp_main.c execution/exec.c execution/builtins1.c execution/builtins2.c
 OBJ := $(SRC:.c=.o)
 INCLUDES := libft/libft.a
 
