@@ -6,7 +6,7 @@
 /*   By: lshapkin <lshapkin@student.42berlin.de>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/05 16:30:03 by lshapkin          #+#    #+#             */
-/*   Updated: 2025/03/16 15:25:07 by lshapkin         ###   ########.fr       */
+/*   Updated: 2025/03/18 15:48:53 by lshapkin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,8 +21,33 @@
 # include <limits.h>
 # include <sys/param.h>
 # include <fcntl.h>
+# include <readline/readline.h>
+# include <readline/history.h>
 
-//types
+
+typedef enum e_token_type 
+{
+	TOKEN_WORD,         // Regular command/argument
+    TOKEN_PIPE,         // '|'
+    TOKEN_REDIRECT_IN,  // '<'
+    TOKEN_REDIRECT_OUT, // '>'
+    TOKEN_HEREDOC,      // '<<'
+    TOKEN_APPEND,       // '>>'
+    TOKEN_AND,         // '&&'
+    TOKEN_OR,          // '||'
+    TOKEN_OPEN_PAREN,  // '('
+    TOKEN_CLOSE_PAREN, // ')'
+    TOKEN_EOF          // End of input
+} t_token_type;
+
+typedef struct s_token
+{
+	t_token_type type;
+	char *value;
+	struct s_token *next;
+} t_token;
+
+//types for execution
 //execution - 1
 //pipe - 2
 //redirection - 3
@@ -44,7 +69,16 @@
 //delimiter is seen. However, it doesn’t have to update the history!
 // 4 - >> - should redirect output in append mode.
 
-typedef struct s_data //break into type-left-right and different struct for each
+
+#define ANSI_COLOR_YELLOW  "\x1b[33m"
+#define ANSI_COLOR_GREEN   "\x1b[32m"
+#define ANSI_COLOR_CYAN    "\x1b[36m"
+#define ANSI_COLOR_RED     "\x1b[31m"
+#define ANSI_COLOR_PINK    "\x1b[35m"
+#define ANSI_COLOR_RESET   "\x1b[0m"
+
+
+typedef struct s_data //break into type-left-right and different struct for each?
 {
 	int				type;
 	char			*full_cmd;
@@ -54,6 +88,7 @@ typedef struct s_data //break into type-left-right and different struct for each
 	int				builtin_type;
 	int				redirection_type;
 	char			*redirection_file;
+	int				end_flag;
 }	t_data;
 
 void	execute(t_data *data, char *envp[]);
