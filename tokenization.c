@@ -6,7 +6,7 @@
 /*   By: lshapkin <lshapkin@student.42berlin.de>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/18 15:17:19 by lshapkin          #+#    #+#             */
-/*   Updated: 2025/03/18 17:18:50 by lshapkin         ###   ########.fr       */
+/*   Updated: 2025/03/19 14:25:31 by lshapkin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,19 +61,70 @@ t_token *tokenize_operator(char **input)
     return (NULL);
 }
 
-t_token *tokenize_word(char **input)
+int handle_env_var(char **input, char *buffer, int buf_index)
 {
-    int len = 0;
-    char *start = *input;
-    while (**input && !ft_strchr(" |<>", **input))
+    (*input)++;  // Skip '$'
+    char var_name[100];  // Assume max length 100
+    int var_len = 0;
+
+    // Extract the variable name
+    while (**input && (ft_isalnum(**input) || **input == '_')) 
     {
+        var_name[var_len++] = **input;
         (*input)++;
-        len++;
     }
-    return (create_token(TOKEN_WORD, strndup(start, len))); //add ft_strndup to libft
+    var_name[var_len] = '\0';
+
+    // Get the variable's value
+    char *value = getenv(var_name);
+    if (!value) value = "";  // Replace with empty string if undefined
+
+    // Copy expanded value to buffer
+    while (*value)
+        buffer[buf_index++] = *value++;
+    return (buf_index);
 }
 
-t_token *tokenize(char *input)
+t_token *tokenize_word(char **input) //norm
+{
+    char *start = *input;
+    char *buffer = malloc(1024);  // Buffer for token storage
+    int buf_index = 0;
+    char quote_char = 0;  // Store quote type (' or ")
+    
+    while (**input && (!strchr(" |<>&()", **input) || quote_char)) 
+    {
+        // Handle opening quotes
+        if ((**input == '\'' || **input == '"') && quote_char == 0) 
+        {
+            quote_char = **input;  // Store whether it's ' or "
+            (*input)++;  // Skip opening quote
+            continue;  // Continue reading inside the quote
+        }
+        // Handle closing quote
+        if (**input == quote_char) 
+        {
+            (*input)++;  // Skip closing quote
+            break;  // End of quoted content
+        }
+        // Handle variable expansion inside double quotes
+        if (**input == '$' && quote_char != '\'') 
+        {  // Only expand in double quotes or unquoted
+            buf_index = handle_env_var(input, buffer, buf_index);
+            continue;  // Don't add the raw $VAR name to buffer
+        }
+        // Copy character to buffer
+        buffer[buf_index++] = **input;
+        (*input)++;
+    }
+    buffer[buf_index] = '\0';  
+    
+    t_token *token = create_token(TOKEN_WORD, strdup(buffer));  // Create token from buffer
+    free(buffer);  // Free buffer after use
+    return token;
+}
+
+t_token *tokenize(char *input) //handle $HOME ..
 {
     t_token *head;
     t_token *current;
@@ -104,6 +155,7 @@ t_token *tokenize(char *input)
     return (head);
 }
 
+//temporary for testing
 void print_tokens(t_token *tokens)
 {
     while (tokens)
@@ -112,10 +164,10 @@ void print_tokens(t_token *tokens)
         tokens = tokens->next;
     }
 }
-
+//temporary for testing
 int main()
 {
-    char input[] = "echo hello | grep world && ls -l > output.txt";
+    char input[] = "echo \"123 $HOME\" | grep word";
     t_token *tokens = tokenize(input);
     print_tokens(tokens);
     return 0;
