@@ -16,11 +16,12 @@ t_cmd    *parse_input(char *input)
 {
     t_cmd   *root = NULL;
     t_cmd   *current = NULL;
-    char buffer[100];
-    int i = 0;
-    int in_quotes = 0;
-    int in_single_quotes = 0;
+    t_token *token_list = tokenize(input);
+    t_token *token = token_list;
     int arg_index = 0;
+
+    if (!token)
+        return (NULL);
 
     root = create_new_node(NULL);
     if (!root)
@@ -28,89 +29,40 @@ t_cmd    *parse_input(char *input)
 
     current = root;
 
-    while (*input)
+    while (token)
     {
-        if (*input == '"')
-            in_quotes = !in_quotes;
-        else if (*input == '\'')
-            in_single_quotes = !in_single_quotes;
-        else if (*input == ' ' && !in_quotes && !in_single_quotes) // Split tokens
+        if (token->type == TOKEN_WORD)
+            store_token(current, token->value, &arg_index, 0);
+        else if (token->type == TOKEN_PIPE)
         {
-            if (i > 0)
-            {
-                buffer[i] = '\0';
-                store_token(current, buffer, &arg_index, in_single_quotes);
-                i = 0;
-            }
-        }
-        else if (*input == '|')
-        {
-            if (i > 0)
-            {
-                buffer[i] = '\0';
-                store_token(current, buffer, &arg_index, in_single_quotes);
-                i = 0;
-            }
-
             current->pipe = 1;
             current->right = create_new_node(current);
             if (!current->right)
                 return (NULL);
-
             current = current->right;
             arg_index = 0;
         }
-        else if (*input == '>' || *input == '<')
+        else if (token->type == TOKEN_REDIRECT_IN || token->type == TOKEN_REDIRECT_OUT
+            || token->type == TOKEN_HEREDOC || token->type == TOKEN_APPEND)
         {
-            if (i > 0)
-            {
-                buffer[i] = '\0';
-                store_token(current, buffer, &arg_index, in_single_quotes);
-                i = 0;
-            }
-
             current->redirect = 1;
-            current->right = create_new_node(current);
-            if (!current->right)
+            current->redirection_type = token->type;
+
+            token = token->next;
+            if (!token || token->type != TOKEN_WORD)
                 return (NULL);
 
-            current = current->right;
-
-            input++; // Skip spaces
-            while (*input == ' ')
-                input++;
-
-            i = 0;
-            while (*input && *input != ' ' && *input != '|' && *input != '<' && *input != '>') // Read the file name into the buffer
-            {
-                buffer[i++] = *input;
-                input++;
-            }
-            buffer[i] = '\0';
-
-            current->redirect_file = ft_strdup(buffer);
+            current->redirect_file = ft_strdup(token->value);
         }
-        else
-            buffer[i++] = *input;
-
-        input++;
+        token = token->next;
     }
-
-    if (i > 0)
-    {
-        buffer[i] = '\0';
-        store_token(current, buffer, &arg_index, in_single_quotes);
-    }
-
     current->args[arg_index] = NULL;
     return (root);
 }
 
-void store_token(t_cmd *current, char *buffer, int *arg_index, int in_single_quotes)
+void store_token(t_cmd *current, char *value, int *arg_index, int in_single_quotes)
 {
     char *expanded_token;
-
-    buffer[ft_strlen(buffer)] = '\0'; // to ensure
 
     if (buffer[0] == '$' && !in_single_quotes)  //Expand variables only if NOT in single quotes
         expanded_token = expand_variable(buffer);
