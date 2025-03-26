@@ -6,13 +6,13 @@
 /*   By: lshapkin <lshapkin@student.42berlin.de>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/16 15:16:26 by lshapkin          #+#    #+#             */
-/*   Updated: 2025/03/17 20:00:59 by lshapkin         ###   ########.fr       */
+/*   Updated: 2025/03/26 20:29:05 by lshapkin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
-char *ft_readline(char *line)
+char *ft_readline()
 {
     char *input;
     char *prompt;
@@ -26,14 +26,14 @@ char *ft_readline(char *line)
 int main (int argc, char *argv[], char *envp[])
 {
     //init
-    char *line;
+    char *input;
+    t_data *root;
+    
     while (1) //data->end_flag == 0
     {
-        ft_readline(line);
-        
-        //parsing
-        
-        //execution
+        input = ft_readline();
+        root = parse_input(input);
+        execute(root, envp);
     }
     //free
 }

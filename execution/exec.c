@@ -6,7 +6,7 @@
 /*   By: lshapkin <lshapkin@student.42berlin.de>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/05 16:43:30 by lshapkin          #+#    #+#             */
-/*   Updated: 2025/03/16 15:07:13 by lshapkin         ###   ########.fr       */
+/*   Updated: 2025/03/26 20:40:59 by lshapkin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,31 +27,24 @@ void	exec(t_data *data, char *envp[])
         exit(EXIT_FAILURE);
     }
 	waitpid(pid, NULL, 0);
-	free_exec(data); //?
+//	free_exec(data); //?
 }
 
 void	builtin(t_data *data, char *envp[])
 {
-	// 1 - echo with option -n
-	if (data->builtin_type == 1)
+	if (data->builtin_type == BUILTIN_ECHO)
 		ft_echo(data);
-	// 2 - cd with only a relative or absolute path
-	else if (data->builtin_type == 2)
+	else if (data->builtin_type == BUILTIN_CD)
 		ft_cd(data);
-	// 3 - pwd with no options
-	else if (data->builtin_type == 3)
+	else if (data->builtin_type == BUILTIN_PWD)
 		ft_pwd();
-	// 4 - export with no options
-	else if (data->builtin_type == 4)
+	else if (data->builtin_type == BUILTIN_EXPORT)
 		ft_export(data, envp);
-	// 5 - unset with no options
-	else if (data->builtin_type == 5)
+	else if (data->builtin_type == BUILTIN_UNSET)
 		ft_unset(data, envp);
-	// 6 - env with no options or arguments
-	else if (data->builtin_type == 6)
+	else if (data->builtin_type == BUILTIN_ENV)
 		ft_env(envp);
-	// 7 - exit with no options
-	else if (data->builtin_type == 7)
+	else if (data->builtin_type == BUILTIN_EXIT)
 		ft_exit();
 }
 
@@ -97,18 +90,13 @@ void	pipes(t_data *data, char *envp[])
 
 void	redirection(t_data *data, char *envp[])
 {
-	// 1 - < - should redirect input.
-	if (data->redirection_type == 1)
+	if (data->redirection_type == REDIRECT_INPUT)
 		redirect_input(data);
-	// 2 - > - should redirect output.
-	else if (data->redirection_type == 2)
+	else if (data->redirection_type == REDIRECT_OUTPUT)
 		redirect_output(data);
-	// 3 - << - should be given a delimiter, then read the input until a line containing the
-	//delimiter is seen. However, it doesn’t have to update the history!
-	//else if (data->redirection_type == 3)
+	//else if (data->redirection_type == REDIRECT_HEREDOC)
 		// to do
-	// 4 - >> - should redirect output in append mode.
-	else if (data->redirection_type == 4)
+	else if (data->redirection_type == REDIRECT_APPEND)
 		redirect_append(data);
 }
 
@@ -116,17 +104,13 @@ void	execute(t_data *data, char *envp[])
 {
 	if (!data)
 		return ;
-	//Execution of a single command
-	if (data->type == 1)
+	if (data->type == EXECUTION)
 		exec(data, envp);
-	//Pipes 
-	else if (data->type == 2)
+	else if (data->type == PIPE)
 		pipes(data, envp);
-	//Redirection
-	else if (data->type == 3)
+	else if (data->type == REDIRECTION)
 		redirection(data, envp);
-	//Builtins
-	else if (data->type == 4)
+	else if (data->type == BUILTIN)
 		builtin(data, envp);
 }
 

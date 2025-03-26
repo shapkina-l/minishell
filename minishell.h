@@ -6,7 +6,7 @@
 /*   By: lshapkin <lshapkin@student.42berlin.de>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/05 16:30:03 by lshapkin          #+#    #+#             */
-/*   Updated: 2025/03/18 15:48:53 by lshapkin         ###   ########.fr       */
+/*   Updated: 2025/03/26 20:45:21 by lshapkin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,6 +25,14 @@
 # include <readline/history.h>
 
 
+typedef enum e_exec_type
+{
+    EXECUTION,
+    PIPE,
+    REDIRECTION,
+    BUILTIN
+} t_exec_type;
+
 typedef enum e_token_type 
 {
 	TOKEN_WORD,         // Regular command/argument
@@ -33,10 +41,10 @@ typedef enum e_token_type
     TOKEN_REDIRECT_OUT, // '>'
     TOKEN_HEREDOC,      // '<<'
     TOKEN_APPEND,       // '>>'
-    TOKEN_AND,         // '&&'
-    TOKEN_OR,          // '||'
-    TOKEN_OPEN_PAREN,  // '('
-    TOKEN_CLOSE_PAREN, // ')'
+    TOKEN_AND,         // '&&' - bonus
+    TOKEN_OR,          // '||' - bonus
+    TOKEN_OPEN_PAREN,  // '(' - bonus
+    TOKEN_CLOSE_PAREN, // ')' - bonus
     TOKEN_EOF          // End of input
 } t_token_type;
 
@@ -47,20 +55,24 @@ typedef struct s_token
 	struct s_token *next;
 } t_token;
 
-//types for execution
-//execution - 1
-//pipe - 2
-//redirection - 3
-//builtin - 4
+typedef enum e_builtin_type
+{
+    BUILTIN_ECHO,
+    BUILTIN_CD,
+    BUILTIN_PWD,
+    BUILTIN_EXPORT,
+	BUILTIN_UNSET,
+	BUILTIN_ENV,
+	BUILTIN_EXIT
+} t_builtin_type;
 
-//builtin types
-// 1 - echo with option -n
-// 2 - cd with only a relative or absolute path
-// 3 - pwd with no options
-// 4 - export with no options !during parsing need to make sure that syntaxsis is corrext (=)!
-// 5 - unset with no options
-// 6 - env with no options or arguments
-// 7 - exit with no options
+typedef enum e_redirection_type
+{
+    REDIRECT_INPUT,
+    REDIRECT_OUTPUT,
+    REDIRECT_HEREDOC,
+    REDIRECT_APPEND
+} t_redirection_type;
 
 //redirection types
 // 1 - < - should redirect input.
@@ -83,6 +95,7 @@ typedef struct s_data //break into type-left-right and different struct for each
 	int				type;
 	char			*full_cmd;
 	char			**args;
+	struct s_data	*root;
 	struct s_data	*left;
 	struct s_data	*right;
 	int				builtin_type;
@@ -103,5 +116,7 @@ int		ft_exit();
 void	redirect_input(t_data *data);
 void	redirect_output(t_data *data);
 void	redirect_append(t_data *data);
+t_token *tokenize(char *input);
+t_data	*parse_input(char *input);
 
 #endif
