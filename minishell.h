@@ -6,7 +6,7 @@
 /*   By: lshapkin <lshapkin@student.42berlin.de>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/05 16:30:03 by lshapkin          #+#    #+#             */
-/*   Updated: 2025/03/26 20:45:21 by lshapkin         ###   ########.fr       */
+/*   Updated: 2025/03/27 23:12:24 by lshapkin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -118,5 +118,9 @@ void	redirect_output(t_data *data);
 void	redirect_append(t_data *data);
 t_token *tokenize(char *input);
 t_data	*parse_input(char *input);
+char	*make_cmd(char **cmd_path, char *argv);
+int     ft_strcmp(const char *s1, const char *s2);
+t_data *create_new_node();
+int     builtin_check(char *cmd);
 
 #endif
