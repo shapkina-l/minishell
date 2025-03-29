@@ -6,7 +6,7 @@
 /*   By: lshapkin <lshapkin@student.42berlin.de>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/12 19:01:51 by lshapkin          #+#    #+#             */
-/*   Updated: 2025/03/16 11:24:17 by lshapkin         ###   ########.fr       */
+/*   Updated: 2025/03/29 14:09:19 by apaz-mar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,7 +31,7 @@ int ft_echo(t_data *data)
     }
     if (newline)
         printf("\n");
-    return 0;
+    return (0);
 }
 
 int ft_cd(t_data *data) 
@@ -44,15 +44,15 @@ int ft_cd(t_data *data)
         path = getenv("HOME");
     if (!path)
     {
-        fprintf(stderr, "cd: HOME not set\n");
-        return 1;
+        printf("cd: HOME not set\n");
+        return (1);
     }
     if (chdir(path) != 0)
     {
         perror("cd");
-        return 1;
+        return (1);
     }
-    return 0;
+    return (0);
 }
 
 int ft_pwd()
@@ -63,7 +63,7 @@ int ft_pwd()
         printf("%s\n", cwd);
     else
         perror("pwd");
-    return 0;
+    return (0);
 }
 
 int ft_env(char *envp[])
@@ -76,7 +76,7 @@ int ft_env(char *envp[])
         printf("%s\n", envp[i]);
         i++;
     }
-    return 0;
+    return (0);
 }
 
 int ft_exit()

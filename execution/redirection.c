@@ -6,7 +6,7 @@
 /*   By: lshapkin <lshapkin@student.42berlin.de>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/16 12:37:47 by lshapkin          #+#    #+#             */
-/*   Updated: 2025/03/16 14:40:43 by lshapkin         ###   ########.fr       */
+/*   Updated: 2025/03/29 16:10:29 by apaz-mar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,7 @@ void redirect_input(t_data *data)
         perror("Error opening file");
         return;
     }    
-    dup2(fd, 1);
+    dup2(fd, 0); //stdin fd=0, stdout fd=1
     close(fd);
 }
 
@@ -36,7 +36,7 @@ void redirect_output(t_data *data)
         perror("Error opening file");
         return;
     }    
-    dup2(fd, 0);
+    dup2(fd, 1);
     close(fd);
 }
 
@@ -50,7 +50,7 @@ void redirect_append(t_data *data)
         perror("Error opening file");
         return;
     }    
-    dup2(fd, 0);
+    dup2(fd, 1);
     close(fd);
 }
 

@@ -164,6 +164,20 @@ t_data *parse_pipe(t_token *token)
     return (pipe_node);
 }
 
+void    free_token_list(t_token *head)
+{
+    t_token *tmp;
+
+    while (head)
+    {
+        tmp = head;
+        head = head->next;
+        if (tmp->value)
+            free(tmp->value);
+        free(tmp);
+    }
+}
+
 t_data	*parse_input(char *input)
 {
     t_token	*token_list;
@@ -178,5 +192,6 @@ t_data	*parse_input(char *input)
     token = token_list;
     root = parse_pipe(token);
     // Free token list here if you have a free_tokens function
+    free_token_list(token_list);
     return (root);
 }

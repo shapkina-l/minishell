@@ -17,8 +17,12 @@ char	*make_cmd(char **cmd_path, char *argv)
 	char	*tmp;
 	char	*cmd;
 
+    if (!argv || !*argv)
+        return (NULL);
+    if (!cmd_path)
+        return (NULL);
 	if (access(argv, 0) == 0)
-		return (argv);
+		return (ft_strdup(argv));
 	while (*cmd_path)
 	{
 		tmp = ft_strjoin(*cmd_path, "/");
@@ -66,6 +70,8 @@ int builtin_check(char *cmd)
         return(BUILTIN_ECHO);
     else if (ft_strcmp(cmd, "cd") == 0)
         return(BUILTIN_CD);
+    else if (ft_strcmp(cmd, "pwd") == 0)
+        return (BUILTIN_PWD);
     else if (ft_strcmp(cmd, "export") == 0)
         return(BUILTIN_EXPORT);
     else if (ft_strcmp(cmd, "unset") == 0)
@@ -76,4 +82,30 @@ int builtin_check(char *cmd)
         return(BUILTIN_EXIT);
     else 
         return (-1);
+}
+
+void    *ft_realloc(void *ptr, size_t old_size, size_t new_size)
+{
+    void    *new_ptr;
+    size_t  copy_size;
+
+    if (new_size == 0)
+    {
+        free(ptr);
+        return (NULL);
+    }
+    new_ptr = malloc(new_size);
+    if (!new_ptr)
+        return (NULL);
+    if (ptr)
+    {
+        // Copy old data into new block (up to the smaller of old/new)
+        if (old_size < new_size)
+            copy_size = old_size;
+        else
+            copy_size = new_size;
+        ft_memcpy(new_ptr, ptr, copy_size);
+        free(ptr);
+    }
+    return (new_ptr);
 }

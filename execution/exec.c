@@ -6,13 +6,13 @@
 /*   By: lshapkin <lshapkin@student.42berlin.de>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/05 16:43:30 by lshapkin          #+#    #+#             */
-/*   Updated: 2025/03/26 20:40:59 by lshapkin         ###   ########.fr       */
+/*   Updated: 2025/03/29 16:31:25 by apaz-mar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../minishell.h"
 
-void	exec(t_data *data, char *envp[])
+void	exec(t_data *data, char **envp)
 {
 	int pid = fork();
 	if (pid < 0)
@@ -27,10 +27,10 @@ void	exec(t_data *data, char *envp[])
         exit(EXIT_FAILURE);
     }
 	waitpid(pid, NULL, 0);
-//	free_exec(data); //?
+//	free_exec(data); //? --> freed in main
 }
 
-void	builtin(t_data *data, char *envp[])
+void	builtin(t_data *data, char ***envp)
 {
 	if (data->builtin_type == BUILTIN_ECHO)
 		ft_echo(data);
@@ -48,7 +48,7 @@ void	builtin(t_data *data, char *envp[])
 		ft_exit();
 }
 
-void	pipes(t_data *data, char *envp[])
+void	pipes(t_data *data, char ***envp)
 {
 	int	fd[2];
 	int	pid1;
@@ -88,7 +88,7 @@ void	pipes(t_data *data, char *envp[])
     waitpid(pid2, NULL, 0);
 }
 
-void	redirection(t_data *data, char *envp[])
+void	redirection(t_data *data, char ***envp)
 {
 	if (data->redirection_type == REDIRECT_INPUT)
 		redirect_input(data);
@@ -100,12 +100,12 @@ void	redirection(t_data *data, char *envp[])
 		redirect_append(data);
 }
 
-void	execute(t_data *data, char *envp[])
+void	execute(t_data *data, char ***envp)
 {
 	if (!data)
 		return ;
 	if (data->type == EXECUTION)
-		exec(data, envp);
+		exec(data, *envp);
 	else if (data->type == PIPE)
 		pipes(data, envp);
 	else if (data->type == REDIRECTION)

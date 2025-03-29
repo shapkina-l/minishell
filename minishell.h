@@ -6,7 +6,7 @@
 /*   By: lshapkin <lshapkin@student.42berlin.de>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/05 16:30:03 by lshapkin          #+#    #+#             */
-/*   Updated: 2025/03/27 23:12:24 by lshapkin         ###   ########.fr       */
+/*   Updated: 2025/03/29 16:33:42 by apaz-mar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,7 +23,6 @@
 # include <fcntl.h>
 # include <readline/readline.h>
 # include <readline/history.h>
-
 
 typedef enum e_exec_type
 {
@@ -104,13 +103,13 @@ typedef struct s_data //break into type-left-right and different struct for each
 	int				end_flag;
 }	t_data;
 
-void	execute(t_data *data, char *envp[]);
+void	execute(t_data *data, char ***envp);
 void	free_exec(t_data *data); //temp
 int		ft_echo(t_data *data);
 int		ft_cd(t_data *data);
 int		ft_pwd();
-int		ft_export(t_data *data, char *envp[]);
-int		ft_unset(t_data *data, char *envp[]);
+int		ft_export(t_data *data, char ***envp);
+int		ft_unset(t_data *data, char ***envp);
 int		ft_env(char *envp[]);
 int		ft_exit();
 void	redirect_input(t_data *data);
@@ -122,5 +121,6 @@ char	*make_cmd(char **cmd_path, char *argv);
 int     ft_strcmp(const char *s1, const char *s2);
 t_data *create_new_node();
 int     builtin_check(char *cmd);
+void    *ft_realloc(void *ptr, size_t old_size, size_t new_size);
 
 #endif
