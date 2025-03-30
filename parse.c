@@ -55,34 +55,34 @@ t_data *parse_command(t_token *token)
     node->args = malloc((count_args + 1) * sizeof(char *));
     if (!node->args)
         return (free(full_cmd), free(cmd_path), free(node), NULL);
-        node->args[0] = ft_strdup(token->value);
-        if (!node->args[0])
+    node->args[0] = ft_strdup(token->value);
+    if (!node->args[0])
+    {
+        free(node->args);
+        free(full_cmd);
+        free(cmd_path);
+        free(node);
+        return (NULL);
+    }
+    // Store remaining arguments
+    i = 1;
+    token = token->next;
+    while (token && token->type == TOKEN_WORD && i < count_args)
+    {
+        node->args[i] = ft_strdup(token->value);
+        if (!node->args[i])
         {
+            while (i > 0)
+                free(node->args[--i]);
             free(node->args);
             free(full_cmd);
             free(cmd_path);
             free(node);
             return (NULL);
         }
-        // Store remaining arguments
-        i = 1;
+        i++;
         token = token->next;
-        while (token && token->type == TOKEN_WORD && i < count_args)
-        {
-            node->args[i] = ft_strdup(token->value);
-            if (!node->args[i])
-            {
-                while (i > 0)
-                    free(node->args[--i]);
-                free(node->args);
-                free(full_cmd);
-                free(cmd_path);
-                free(node);
-                return (NULL);
-            }
-            i++;
-            token = token->next;
-        }
+    }
     node->args[i] = NULL;
     if (node->type == EXECUTION)
         free(cmd_path);

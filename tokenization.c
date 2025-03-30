@@ -77,7 +77,8 @@ int handle_env_var(char **input, char *buffer, int buf_index)
 
     // Get the variable's value
     char *value = getenv(var_name);
-    if (!value) value = "";  // Replace with empty string if undefined
+    if (!value)
+        value = "";  // Replace with empty string if undefined
 
     // Copy expanded value to buffer
     while (*value)
@@ -121,7 +122,7 @@ t_token *tokenize_word(char **input) //norm
     
     t_token *token = create_token(TOKEN_WORD, strdup(buffer));  // Create token from buffer
     free(buffer);
-    return token;
+    return (token);
 }
 
 t_token *tokenize(char *input)
