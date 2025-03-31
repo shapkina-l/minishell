@@ -88,7 +88,6 @@ int handle_env_var(char **input, char *buffer, int buf_index)
 
 t_token *tokenize_word(char **input) //norm
 {
-    char *start = *input;
     char *buffer = malloc(1024);  // Buffer for token storage
     int buf_index = 0;
     char quote_char = 0;  // Store quote type (' or ")

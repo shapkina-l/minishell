@@ -20,7 +20,9 @@ char	*make_cmd(char **cmd_path, char *argv)
     if (!argv || !*argv)
         return (NULL);
     if (!cmd_path)
+    {
         return (NULL);
+    }     
 	if (access(argv, 0) == 0)
 		return (ft_strdup(argv));
 	while (*cmd_path)

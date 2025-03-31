@@ -38,7 +38,7 @@ void ft_export_var_create(char *new_var, char ***envp)
     len = 0;
     while ((*envp)[len]) 
         len++;
-    char **new_envp = ft_realloc(*envp, sizeof(char *) * (len + 2));
+    char **new_envp = ft_realloc(*envp, len + 1, sizeof(char *) * (len + 2));
     if (!new_envp)
         return ;
     new_envp[len] = new_var;
@@ -57,7 +57,7 @@ int ft_export(t_data *data, char ***envp)
         i = 0;
         while(envp[i])
         {
-            printf("declare -x %s\n", envp[i]);
+            printf("declare -x %s\n", (*envp)[i]);
             i++;
         }
         return (0);

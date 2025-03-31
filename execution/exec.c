@@ -43,7 +43,7 @@ void	builtin(t_data *data, char ***envp)
 	else if (data->builtin_type == BUILTIN_UNSET)
 		ft_unset(data, envp);
 	else if (data->builtin_type == BUILTIN_ENV)
-		ft_env(envp);
+		ft_env(*envp);
 	else if (data->builtin_type == BUILTIN_EXIT)
 		ft_exit();
 }
@@ -88,7 +88,7 @@ void	pipes(t_data *data, char ***envp)
     waitpid(pid2, NULL, 0);
 }
 
-void	redirection(t_data *data, char ***envp)
+void	redirection(t_data *data)
 {
 	if (data->redirection_type == REDIRECT_INPUT)
 		redirect_input(data);
@@ -109,7 +109,7 @@ void	execute(t_data *data, char ***envp)
 	else if (data->type == PIPE)
 		pipes(data, envp);
 	else if (data->type == REDIRECTION)
-		redirection(data, envp);
+		redirection(data);
 	else if (data->type == BUILTIN)
 		builtin(data, envp);
 }

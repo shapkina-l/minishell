@@ -80,13 +80,15 @@ void    free_exec(t_data *data)
     free(data); //free the node itself
 }
 
-int main (int argc, char *argv[], char *envp[])
+int main (int argc, char **argv, char *envp[])
 {
     //init
     char *input;
     t_data *root;
     char    **my_envp;
     
+    (void)argc;
+    (void)argv;
     my_envp = dup_envp(envp);
     if (!my_envp)
     {
