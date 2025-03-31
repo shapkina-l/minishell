@@ -82,13 +82,14 @@ void    free_exec(t_data *data)
 
 int main (int argc, char **argv, char *envp[])
 {
-    //init
     char *input;
     t_data *root;
     char    **my_envp;
     
     (void)argc;
     (void)argv;
+    signal(SIGINT, my_shell_handler); // dont kill minishell (parent) with ctrl + C
+    signal(SIGQUIT, SIG_IGN); // ignore Ctrl + \ in minishell (parent)
     my_envp = dup_envp(envp);
     if (!my_envp)
     {

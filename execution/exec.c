@@ -22,7 +22,9 @@ void	exec(t_data *data, char **envp)
     }
 	if (pid == 0)
 	{
-        execve(data->full_cmd, data->args, envp);
+        signal(SIGINT, SIG_DFL); // Ctrl + C should terminate the child normally
+		signal(SIGQUIT, SIG_DFL); // Ctrl + \ should work normally
+		execve(data->full_cmd, data->args, envp);
         perror("execve");
         exit(EXIT_FAILURE);
     }

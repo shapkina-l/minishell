@@ -111,3 +111,12 @@ void    *ft_realloc(void *ptr, size_t old_size, size_t new_size)
     }
     return (new_ptr);
 }
+
+void my_shell_handler(int signum)
+{
+    (void)signum;           //int signum as argument necessary because of the arguments that signal expect
+    write(1, "\n", 1);      // Move to a new line
+    rl_replace_line("", 0); // Clear the current input line
+    rl_on_new_line();       // Prepare a new prompt
+    rl_redisplay();         // Redisplay the prompt
+}

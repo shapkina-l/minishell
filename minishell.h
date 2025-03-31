@@ -23,6 +23,7 @@
 # include <fcntl.h>
 # include <readline/readline.h>
 # include <readline/history.h>
+# include <signal.h>
 
 typedef enum e_exec_type
 {
@@ -122,5 +123,6 @@ int     ft_strcmp(const char *s1, const char *s2);
 t_data *create_new_node();
 int     builtin_check(char *cmd);
 void    *ft_realloc(void *ptr, size_t old_size, size_t new_size);
+void    my_shell_handler(int signum);
 
 #endif
