@@ -1,0 +1,19 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "build",
+            "type": "shell",
+            "command": "make",
+            "args": [
+                // Add any makefile targets or options here
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": ["$gcc"],
+            "detail": "Generated task for building using Makefile"
+        }
+    ]
+}
