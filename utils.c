@@ -6,7 +6,7 @@
 /*   By: lshapkin <lshapkin@student.42berlin.de>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/27 21:48:30 by lshapkin          #+#    #+#             */
-/*   Updated: 2025/04/02 15:28:33 by lshapkin         ###   ########.fr       */
+/*   Updated: 2025/04/02 22:59:51 by lshapkin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,12 +17,12 @@ char	*make_cmd(char **cmd_path, char *argv)
 	char	*tmp;
 	char	*cmd;
 
-    if (!argv || !*argv)
-        return (NULL);
-    if (!cmd_path)
-    {
-        return (NULL);
-    }     
+	if (!argv || !*argv)
+		return (NULL);
+	if (!cmd_path)
+	{
+		return (NULL);
+	}
 	if (access(argv, 0) == 0)
 		return (ft_strdup(argv));
 	while (*cmd_path)
@@ -38,86 +38,76 @@ char	*make_cmd(char **cmd_path, char *argv)
 	return (NULL);
 }
 
-t_data *create_new_node()
+t_data	*create_new_node(void)
 {
-    t_data *node;
-    
-    node = malloc(sizeof(t_data));
-    if (!node) 
-        return (NULL);       
-    node->type = -1;
-    node->args = NULL;
-    node->full_cmd = NULL;
-    node->redirection_type = 0;
-    node->redirection_file = NULL;
-    node->left = NULL;
-    node->right = NULL;
-    node->original_stdin = dup(STDIN_FILENO);
-    node->original_stdout = dup(STDOUT_FILENO);
-    return (node);
+	t_data	*node;
+
+	node = malloc(sizeof(t_data));
+	if (!node)
+		return (NULL);
+	node->type = -1;
+	node->args = NULL;
+	node->full_cmd = NULL;
+	node->redirection_type = 0;
+	node->redirection_file = NULL;
+	node->left = NULL;
+	node->right = NULL;
+	node->original_stdin = dup(STDIN_FILENO);
+	node->original_stdout = dup(STDOUT_FILENO);
+	return (node);
 }
 
-int ft_strcmp(const char *s1, const char *s2)
+int	ft_strcmp(const char *s1, const char *s2)
 {
-    while (*s1 && *s2 && *s1 == *s2)
-    {
-        s1++;
-        s2++;
-    }
-    return ((unsigned char)*s1 - (unsigned char)*s2);
+	while (*s1 && *s2 && *s1 == *s2)
+	{
+		s1++;
+		s2++;
+	}
+	return ((unsigned char)*s1 - (unsigned char)*s2);
 }
 
-int builtin_check(char *cmd)
+int	builtin_check(char *cmd)
 {
-    if (ft_strcmp(cmd, "echo") == 0)
-        return(BUILTIN_ECHO);
-    else if (ft_strcmp(cmd, "cd") == 0)
-        return(BUILTIN_CD);
-    else if (ft_strcmp(cmd, "pwd") == 0)
-        return (BUILTIN_PWD);
-    else if (ft_strcmp(cmd, "export") == 0)
-        return(BUILTIN_EXPORT);
-    else if (ft_strcmp(cmd, "unset") == 0)
-        return(BUILTIN_UNSET);
-    else if (ft_strcmp(cmd, "env") == 0)
-        return(BUILTIN_ENV);
-    else if (ft_strcmp(cmd, "exit") == 0)
-        return(BUILTIN_EXIT);
-    else 
-        return (-1);
+	if (ft_strcmp(cmd, "echo") == 0)
+		return (BUILTIN_ECHO);
+	else if (ft_strcmp(cmd, "cd") == 0)
+		return (BUILTIN_CD);
+	else if (ft_strcmp(cmd, "pwd") == 0)
+		return (BUILTIN_PWD);
+	else if (ft_strcmp(cmd, "export") == 0)
+		return (BUILTIN_EXPORT);
+	else if (ft_strcmp(cmd, "unset") == 0)
+		return (BUILTIN_UNSET);
+	else if (ft_strcmp(cmd, "env") == 0)
+		return (BUILTIN_ENV);
+	else if (ft_strcmp(cmd, "exit") == 0)
+		return (BUILTIN_EXIT);
+	else
+		return (-1);
 }
 
-void    *ft_realloc(void *ptr, size_t old_size, size_t new_size)
+void	*ft_realloc(void *ptr, size_t old_size, size_t new_size)
 {
-    void    *new_ptr;
-    size_t  copy_size;
+	void	*new_ptr;
+	size_t	copy_size;
 
-    if (new_size == 0)
-    {
-        free(ptr);
-        return (NULL);
-    }
-    new_ptr = malloc(new_size);
-    if (!new_ptr)
-        return (NULL);
-    if (ptr)
-    {
-        // Copy old data into new block (up to the smaller of old/new)
-        if (old_size < new_size)
-            copy_size = old_size;
-        else
-            copy_size = new_size;
-        ft_memcpy(new_ptr, ptr, copy_size);
-        free(ptr);
-    }
-    return (new_ptr);
-}
-
-void my_shell_handler(int signum)
-{
-    (void)signum;           //int signum as argument necessary because of the arguments that signal expect
-    write(1, "\n", 1);      // Move to a new line
-    rl_replace_line("", 0); // Clear the current input line
-    rl_on_new_line();       // Prepare a new prompt
-    rl_redisplay();         // Redisplay the prompt
+	if (new_size == 0)
+	{
+		free(ptr);
+		return (NULL);
+	}
+	new_ptr = malloc(new_size);
+	if (!new_ptr)
+		return (NULL);
+	if (ptr)
+	{
+		if (old_size < new_size)
+			copy_size = old_size;
+		else
+			copy_size = new_size;
+		ft_memcpy(new_ptr, ptr, copy_size);
+		free(ptr);
+	}
+	return (new_ptr);
 }

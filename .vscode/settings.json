@@ -4,6 +4,7 @@
         "stdarg.h": "c",
         "fdf.h": "c",
         "type_traits": "c",
-        "utility": "c"
+        "utility": "c",
+        "minishell.h": "c"
     }
 }

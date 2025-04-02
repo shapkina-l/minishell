@@ -6,11 +6,11 @@
 /*   By: lshapkin <lshapkin@student.42berlin.de>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/18 15:17:19 by lshapkin          #+#    #+#             */
-/*   Updated: 2025/04/02 22:53:18 by lshapkin         ###   ########.fr       */
+/*   Updated: 2025/04/03 01:03:29 by lshapkin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "minishell.h"
+#include "../minishell.h"
 
 t_token	*create_token(t_token_type type, char *value)
 {
