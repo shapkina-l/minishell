@@ -6,7 +6,7 @@
 /*   By: lshapkin <lshapkin@student.42berlin.de>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/05 16:30:03 by lshapkin          #+#    #+#             */
-/*   Updated: 2025/04/02 16:28:01 by lshapkin         ###   ########.fr       */
+/*   Updated: 2025/04/02 22:53:51 by lshapkin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,70 +27,82 @@
 
 typedef enum e_exec_type
 {
-    EXECUTION,
-    PIPE,
-    REDIRECTION,
-    BUILTIN
-} t_exec_type;
+	EXECUTION,
+	PIPE,
+	REDIRECTION,
+	BUILTIN
+}	t_exec_type;
 
-typedef enum e_token_type 
+// TOKEN_WORD,         // Regular command/argument
+// TOKEN_PIPE,         // '|'
+// TOKEN_REDIRECT_IN,  // '<'
+// TOKEN_REDIRECT_OUT, // '>'
+// TOKEN_HEREDOC,      // '<<'
+// TOKEN_APPEND,       // '>>'
+// TOKEN_AND,         // '&&' - bonus
+// TOKEN_OR,          // '||' - bonus
+// TOKEN_OPEN_PAREN,  // '(' - bonus
+// TOKEN_CLOSE_PAREN, // ')' - bonus
+// TOKEN_EOF          // End of input
+
+typedef enum e_token_type
 {
-	TOKEN_WORD,         // Regular command/argument
-    TOKEN_PIPE,         // '|'
-    TOKEN_REDIRECT_IN,  // '<'
-    TOKEN_REDIRECT_OUT, // '>'
-    TOKEN_HEREDOC,      // '<<'
-    TOKEN_APPEND,       // '>>'
-    TOKEN_AND,         // '&&' - bonus
-    TOKEN_OR,          // '||' - bonus
-    TOKEN_OPEN_PAREN,  // '(' - bonus
-    TOKEN_CLOSE_PAREN, // ')' - bonus
-    TOKEN_EOF          // End of input
-} t_token_type;
+	TOKEN_WORD,
+	TOKEN_PIPE,
+	TOKEN_REDIRECT_IN,
+	TOKEN_REDIRECT_OUT,
+	TOKEN_HEREDOC,
+	TOKEN_APPEND,
+	TOKEN_AND,
+	TOKEN_OR,
+	TOKEN_OPEN_PAREN,
+	TOKEN_CLOSE_PAREN,
+	TOKEN_EOF
+}	t_token_type;
 
 typedef struct s_token
 {
-	t_token_type type;
-	char *value;
-	struct s_token *next;
-} t_token;
+	t_token_type	type;
+	char			*value;
+	struct s_token	*next;
+}	t_token;
 
 typedef enum e_builtin_type
 {
-    BUILTIN_ECHO,
-    BUILTIN_CD,
-    BUILTIN_PWD,
-    BUILTIN_EXPORT,
+	BUILTIN_ECHO,
+	BUILTIN_CD,
+	BUILTIN_PWD,
+	BUILTIN_EXPORT,
 	BUILTIN_UNSET,
 	BUILTIN_ENV,
 	BUILTIN_EXIT
-} t_builtin_type;
+}	t_builtin_type;
 
 typedef enum e_redirection_type
 {
-    REDIRECT_INPUT,
-    REDIRECT_OUTPUT,
-    REDIRECT_HEREDOC,
-    REDIRECT_APPEND
-} t_redirection_type;
+	REDIRECT_INPUT,
+	REDIRECT_OUTPUT,
+	REDIRECT_HEREDOC,
+	REDIRECT_APPEND
+}	t_redirection_type;
 
 //redirection types
 // 1 - < - should redirect input.
 // 2 - > - should redirect output.
-// 3 - << - should be given a delimiter, then read the input until a line containing the
+// 3 - << - should be given a delimiter, then read the input until a line 
+// containing the
 //delimiter is seen. However, it doesn’t have to update the history!
 // 4 - >> - should redirect output in append mode.
 
+//delete?
+# define ANSI_COLOR_YELLOW  "\x1b[33m"
+# define ANSI_COLOR_GREEN   "\x1b[32m"
+# define ANSI_COLOR_CYAN    "\x1b[36m"
+# define ANSI_COLOR_RED     "\x1b[31m"
+# define ANSI_COLOR_PINK    "\x1b[35m"
+# define ANSI_COLOR_RESET   "\x1b[0m"
 
-#define ANSI_COLOR_YELLOW  "\x1b[33m"
-#define ANSI_COLOR_GREEN   "\x1b[32m"
-#define ANSI_COLOR_CYAN    "\x1b[36m"
-#define ANSI_COLOR_RED     "\x1b[31m"
-#define ANSI_COLOR_PINK    "\x1b[35m"
-#define ANSI_COLOR_RESET   "\x1b[0m"
-
-
-typedef struct s_data 
+typedef struct s_data
 {
 	int				type;
 	char			*full_cmd;
@@ -102,31 +114,33 @@ typedef struct s_data
 	int				redirection_type;
 	char			*redirection_file;
 	int				end_flag;
-    int             original_stdin;
-    int             original_stdout;
+	int				original_stdin;
+	int				original_stdout;
 }	t_data;
 
-int	execute(t_data *data, char ***envp);
+int		execute(t_data *data, char ***envp);
 void	free_exec(t_data *data); //temp
 int		ft_echo(t_data *data);
 int		ft_cd(t_data *data);
-int		ft_pwd();
+int		ft_pwd(void);
 int		ft_export(t_data *data, char ***envp);
 int		ft_unset(t_data *data, char ***envp);
 int		ft_env(char *envp[]);
-int		ft_exit();
+int		ft_exit(void);
 void	redirect_input(t_data *data);
 void	redirect_output(t_data *data);
 void	redirect_append(t_data *data);
-t_token *tokenize(char *input);
+t_token	*tokenize(char *input);
 t_data	*parse_input(char *input);
 char	*make_cmd(char **cmd_path, char *argv);
-int     ft_strcmp(const char *s1, const char *s2);
-t_data *create_new_node();
-int     builtin_check(char *cmd);
-void    *ft_realloc(void *ptr, size_t old_size, size_t new_size);
-void    my_shell_handler(int signum);
-void    reset_redirections(int original_stdin, int original_stdout);
-int	redirection(t_data *data, char ***envp);
+int		ft_strcmp(const char *s1, const char *s2);
+t_data	*create_new_node(void);
+int		builtin_check(char *cmd);
+void	*ft_realloc(void *ptr, size_t old_size, size_t new_size);
+void	my_shell_handler(int signum);
+void	reset_redirections(int original_stdin, int original_stdout);
+int		redirection(t_data *data, char ***envp);
+void	skip_whitespaces(char **input);
+int		handle_env_var(char **input, char *buffer, int buf_index);
 
 #endif
