@@ -6,7 +6,7 @@
 /*   By: lshapkin <lshapkin@student.42berlin.de>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/05 16:30:03 by lshapkin          #+#    #+#             */
-/*   Updated: 2025/03/29 16:33:42 by apaz-mar         ###   ########.fr       */
+/*   Updated: 2025/04/02 16:28:01 by lshapkin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -90,7 +90,7 @@ typedef enum e_redirection_type
 #define ANSI_COLOR_RESET   "\x1b[0m"
 
 
-typedef struct s_data //break into type-left-right and different struct for each?
+typedef struct s_data 
 {
 	int				type;
 	char			*full_cmd;
@@ -102,9 +102,11 @@ typedef struct s_data //break into type-left-right and different struct for each
 	int				redirection_type;
 	char			*redirection_file;
 	int				end_flag;
+    int             original_stdin;
+    int             original_stdout;
 }	t_data;
 
-void	execute(t_data *data, char ***envp);
+int	execute(t_data *data, char ***envp);
 void	free_exec(t_data *data); //temp
 int		ft_echo(t_data *data);
 int		ft_cd(t_data *data);
@@ -124,5 +126,7 @@ t_data *create_new_node();
 int     builtin_check(char *cmd);
 void    *ft_realloc(void *ptr, size_t old_size, size_t new_size);
 void    my_shell_handler(int signum);
+void    reset_redirections(int original_stdin, int original_stdout);
+int	redirection(t_data *data, char ***envp);
 
 #endif

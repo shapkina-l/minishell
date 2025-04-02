@@ -6,7 +6,7 @@
 /*   By: lshapkin <lshapkin@student.42berlin.de>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/16 12:37:47 by lshapkin          #+#    #+#             */
-/*   Updated: 2025/03/29 16:10:29 by apaz-mar         ###   ########.fr       */
+/*   Updated: 2025/04/02 15:59:51 by lshapkin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,3 +54,13 @@ void redirect_append(t_data *data)
     close(fd);
 }
 
+void reset_redirections(int original_stdin, int original_stdout)
+{
+    // Restore original stdin
+    dup2(original_stdin, STDIN_FILENO);
+    close(original_stdin);
+
+    // Restore original stdout
+    dup2(original_stdout, STDOUT_FILENO);
+    close(original_stdout);
+}

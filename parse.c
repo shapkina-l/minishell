@@ -6,7 +6,7 @@
 /*   By: lshapkin <lshapkin@student.42berlin.de>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/05 17:17:56 by apaz-mar          #+#    #+#             */
-/*   Updated: 2025/03/27 23:12:58 by lshapkin         ###   ########.fr       */
+/*   Updated: 2025/04/02 16:04:45 by lshapkin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -91,24 +91,37 @@ t_data *parse_command(t_token *token)
 
 t_data	*parse_redirection(t_token *token, t_data *cmd_node)
 {
-    if (!token || !cmd_node)
-        return (NULL);
-    if (token->type == TOKEN_REDIRECT_IN)
-        cmd_node->redirection_type = REDIRECT_INPUT;
-    else if (token->type == TOKEN_REDIRECT_OUT)
-        cmd_node->redirection_type = REDIRECT_OUTPUT;
-    else if (token->type == TOKEN_APPEND)
-        cmd_node->redirection_type = REDIRECT_APPEND;
-    else if (token->type == TOKEN_HEREDOC)
-        cmd_node->redirection_type = REDIRECT_HEREDOC;
-    else
-        return (cmd_node); // No redirection, return as is
-    token = token->next;
-    if (!token || token->type != TOKEN_WORD)
-        return (NULL); // Missing file after redirection
-    cmd_node->redirection_file = ft_strdup(token->value);
-    if (!cmd_node->redirection_file)
-        return (NULL);
+    t_data *redir_node;
+    
+    while (token && (token->type >= TOKEN_REDIRECT_IN && token->type <= TOKEN_APPEND))
+    {
+        if (!token->next || token->next->type != TOKEN_WORD)
+            return (NULL); // Missing file after redirection
+
+        redir_node = create_new_node();
+        if (!redir_node)
+            return (NULL);
+        
+        if (token->type == TOKEN_REDIRECT_IN)
+            redir_node->redirection_type = REDIRECT_INPUT;
+        else if (token->type == TOKEN_REDIRECT_OUT)
+            redir_node->redirection_type = REDIRECT_OUTPUT;
+        else if (token->type == TOKEN_APPEND)
+            redir_node->redirection_type = REDIRECT_APPEND;
+        else if (token->type == TOKEN_HEREDOC)
+            redir_node->redirection_type = REDIRECT_HEREDOC;
+
+        redir_node->redirection_file = ft_strdup(token->next->value);
+        if (!redir_node->redirection_file)
+            return (NULL);
+        
+        redir_node->type = REDIRECTION;
+        redir_node->left = cmd_node; // Wrap command inside redirection node
+        cmd_node = redir_node; // Update root to the new redirection node
+
+        token = token->next->next; // Move past the filename
+    }
+    
     return (cmd_node);
 }
 

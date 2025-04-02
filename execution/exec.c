@@ -6,15 +6,18 @@
 /*   By: lshapkin <lshapkin@student.42berlin.de>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/05 16:43:30 by lshapkin          #+#    #+#             */
-/*   Updated: 2025/03/29 16:31:25 by apaz-mar         ###   ########.fr       */
+/*   Updated: 2025/04/02 16:33:35 by lshapkin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../minishell.h"
 
-void	exec(t_data *data, char **envp)
+int	exec(t_data *data, char **envp)
 {
-	int pid = fork();
+	int status;
+	int pid;
+	
+	pid = fork();
 	if (pid < 0)
     {
         perror("fork");
@@ -28,33 +31,37 @@ void	exec(t_data *data, char **envp)
         perror("execve");
         exit(EXIT_FAILURE);
     }
-	waitpid(pid, NULL, 0);
+	waitpid(pid, &status, 0);
+	return (WIFEXITED(status) ? WEXITSTATUS(status) : 1);
 //	free_exec(data); //? --> freed in main
 }
 
-void	builtin(t_data *data, char ***envp)
+int	builtin(t_data *data, char ***envp)
 {
 	if (data->builtin_type == BUILTIN_ECHO)
-		ft_echo(data);
+		return (ft_echo(data));
 	else if (data->builtin_type == BUILTIN_CD)
-		ft_cd(data);
+		return (ft_cd(data));
 	else if (data->builtin_type == BUILTIN_PWD)
-		ft_pwd();
+		return (ft_pwd());
 	else if (data->builtin_type == BUILTIN_EXPORT)
-		ft_export(data, envp);
+		return (ft_export(data, envp));
 	else if (data->builtin_type == BUILTIN_UNSET)
-		ft_unset(data, envp);
+		return (ft_unset(data, envp));
 	else if (data->builtin_type == BUILTIN_ENV)
-		ft_env(*envp);
+		return (ft_env(*envp));
 	else if (data->builtin_type == BUILTIN_EXIT)
-		ft_exit();
+		return (ft_exit());
+	return (1);
 }
 
-void	pipes(t_data *data, char ***envp)
+int	pipes(t_data *data, char ***envp)
 {
 	int	fd[2];
 	int	pid1;
 	int	pid2;
+	int status1;
+	int status2;
 
 	if (pipe(fd) == -1)
 	{
@@ -86,11 +93,12 @@ void	pipes(t_data *data, char ***envp)
 	}
 	close(fd[0]);
 	close(fd[1]);
-	waitpid(pid1, NULL, 0);
-    waitpid(pid2, NULL, 0);
+	waitpid(pid1, &status1, 0);
+    waitpid(pid2, &status2, 0);
+    return (WIFEXITED(status2) ? WEXITSTATUS(status2) : 1); // Return last command’s status
 }
 
-void	redirection(t_data *data)
+int	redirection(t_data *data, char ***envp)
 {
 	if (data->redirection_type == REDIRECT_INPUT)
 		redirect_input(data);
@@ -100,19 +108,25 @@ void	redirection(t_data *data)
 		// to do
 	else if (data->redirection_type == REDIRECT_APPEND)
 		redirect_append(data);
+	return (execute(data->left, envp));
 }
 
-void	execute(t_data *data, char ***envp)
+int	execute(t_data *data, char ***envp)
 {
+	int ret;
+	
+	ret = 1;
 	if (!data)
-		return ;
+		return 0;
 	if (data->type == EXECUTION)
-		exec(data, *envp);
+		ret = exec(data, *envp);
 	else if (data->type == PIPE)
-		pipes(data, envp);
+		ret = pipes(data, envp);
 	else if (data->type == REDIRECTION)
-		redirection(data);
+		ret = redirection(data, envp);
 	else if (data->type == BUILTIN)
-		builtin(data, envp);
+		ret = builtin(data, envp);
+	reset_redirections(data->original_stdin, data->original_stdout);
+	return (ret);
 }
 

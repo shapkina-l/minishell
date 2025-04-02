@@ -6,7 +6,7 @@
 /*   By: lshapkin <lshapkin@student.42berlin.de>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/16 15:16:26 by lshapkin          #+#    #+#             */
-/*   Updated: 2025/03/29 15:30:05 by apaz-mar         ###   ########.fr       */
+/*   Updated: 2025/04/02 16:33:51 by lshapkin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -85,6 +85,7 @@ int main (int argc, char **argv, char *envp[])
     char *input;
     t_data *root;
     char    **my_envp;
+    int     last_exit_status = 0; 
     
     (void)argc;
     (void)argv;
@@ -107,10 +108,10 @@ int main (int argc, char **argv, char *envp[])
             free(input);
             continue ; // it skips execute and free if root fails
         }
-        execute(root, &my_envp);
+        last_exit_status = execute(root, &my_envp);
         free(input);
         free_exec(root);
     }
     free_envp(my_envp);
-    return (0);
+    return (last_exit_status);
 }

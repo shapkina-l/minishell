@@ -6,7 +6,7 @@
 /*   By: lshapkin <lshapkin@student.42berlin.de>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/27 21:48:30 by lshapkin          #+#    #+#             */
-/*   Updated: 2025/03/27 23:12:06 by lshapkin         ###   ########.fr       */
+/*   Updated: 2025/04/02 15:28:33 by lshapkin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,7 +52,8 @@ t_data *create_new_node()
     node->redirection_file = NULL;
     node->left = NULL;
     node->right = NULL;
-
+    node->original_stdin = dup(STDIN_FILENO);
+    node->original_stdout = dup(STDOUT_FILENO);
     return (node);
 }
 
