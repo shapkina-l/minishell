@@ -6,15 +6,37 @@
 /*   By: lshapkin <lshapkin@student.42berlin.de>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/03 01:00:54 by lshapkin          #+#    #+#             */
-/*   Updated: 2025/04/03 01:05:15 by lshapkin         ###   ########.fr       */
+/*   Updated: 2025/04/03 21:04:44 by lshapkin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../minishell.h"
 
-t_data *parse_pipe(t_token *token)
+t_data	*create_pipe_node(t_data *left, t_token *token)
+{
+	t_data	*pipe_node;
+	t_data	*right;
+
+	token = token->next;
+	if (!token)
+		return (free(left), NULL);
+	right = parse_pipe(token);
+	if (!right)
+		return (free(left), NULL);
+	pipe_node = create_new_node();
+	if (!pipe_node)
+		return (free(left), free(right), NULL);
+	pipe_node->type = PIPE;
+	pipe_node->left = left;
+	pipe_node->right = right;
+	return (pipe_node);
+}
+
+t_data	*parse_pipe(t_token *token)
 {
 	t_data	*left;
+	t_data	*right;
+	t_data	*pipe_node;
 
 	if (!token)
 		return (NULL);
@@ -28,38 +50,20 @@ t_data *parse_pipe(t_token *token)
 			left = parse_redirection(token, left);
 			if (!left)
 				return (NULL);
-			token = token->next->next; // Skip redirection operator and file
+			token = token->next->next;
 		}
 		else
 			token = token->next;
 	}
-	// If no pipe, return the command (with possible redirection)
 	if (!token || token->type != TOKEN_PIPE)
 		return (left);
-	// Found a pipe, advance and parse the right side recursively
-	token = token->next;
-	if (!token)
-		return (free(left), NULL); // Pipe with no right command is invalid
-
-	t_data *right = parse_pipe(token); // Recursive call for multiple pipes
-	if (!right)
-		return (free(left), NULL);
-
-	// Create pipe node
-	
-	t_data *pipe_node = create_new_node();
-	if (!pipe_node)
-		return (free(left), free(right), NULL);
-	pipe_node->type = PIPE;
-	pipe_node->left = left;
-	pipe_node->right = right;
-
+	pipe_node = create_pipe_node(left, token);
 	return (pipe_node);
 }
 
-void    free_token_list(t_token *head)
+void	free_token_list(t_token *head)
 {
-	t_token *tmp;
+	t_token	*tmp;
 
 	while (head)
 	{
