@@ -6,7 +6,7 @@
 /*   By: lshapkin <lshapkin@student.42berlin.de>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/16 15:16:26 by lshapkin          #+#    #+#             */
-/*   Updated: 2025/04/02 21:04:59 by lshapkin         ###   ########.fr       */
+/*   Updated: 2025/04/03 21:47:28 by lshapkin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,6 @@ char	*ft_readline(void)
 }
 
 //copy of the environment to avoid undefined behaviour of non allocated envp
-
 char	**dup_envp(char **envp)
 {
 	int		i;

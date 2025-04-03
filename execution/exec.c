@@ -6,7 +6,7 @@
 /*   By: lshapkin <lshapkin@student.42berlin.de>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/05 16:43:30 by lshapkin          #+#    #+#             */
-/*   Updated: 2025/04/02 16:33:35 by lshapkin         ###   ########.fr       */
+/*   Updated: 2025/04/03 23:36:38 by lshapkin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,23 +14,23 @@
 
 int	exec(t_data *data, char **envp)
 {
-	int status;
-	int pid;
-	
+	int	status;
+	int	pid;
+
 	pid = fork();
 	if (pid < 0)
-    {
-        perror("fork");
-        exit(EXIT_FAILURE);
-    }
+	{
+		perror("fork");
+		exit(EXIT_FAILURE);
+	}
 	if (pid == 0)
 	{
-        signal(SIGINT, SIG_DFL); // Ctrl + C should terminate the child normally
+		signal(SIGINT, SIG_DFL); // Ctrl + C should terminate the child normally
 		signal(SIGQUIT, SIG_DFL); // Ctrl + \ should work normally
 		execve(data->full_cmd, data->args, envp);
-        perror("execve");
-        exit(EXIT_FAILURE);
-    }
+		perror("execve");
+		exit(EXIT_FAILURE);
+	}
 	waitpid(pid, &status, 0);
 	return (WIFEXITED(status) ? WEXITSTATUS(status) : 1);
 //	free_exec(data); //? --> freed in main
@@ -55,47 +55,56 @@ int	builtin(t_data *data, char ***envp)
 	return (1);
 }
 
+void	close_fd(int fd[2])
+{
+	if (fd[0] != -1)
+		close(fd[0]);
+	if (fd[1] != -1)
+		close(fd[1]);
+}
+
+void	exec_pipe(int fd[2], int var, t_data *exec, char ***envp)
+{
+	if (var == 1)
+	{
+		dup2(fd[1], STDOUT_FILENO);
+		close_fd(fd);
+		execute(exec, envp);
+		exit(EXIT_FAILURE);
+	}
+	else if (var == 2)
+	{
+		dup2(fd[0], STDIN_FILENO);
+		close_fd(fd);
+		execute(exec, envp);
+		exit(EXIT_FAILURE);
+	}
+}
+
 int	pipes(t_data *data, char ***envp)
 {
 	int	fd[2];
 	int	pid1;
 	int	pid2;
-	int status1;
-	int status2;
+	int	status1;
+	int	status2;
 
 	if (pipe(fd) == -1)
-	{
 		perror("pipe");
-		exit(EXIT_FAILURE);
-	}
 	pid1 = fork();
 	if (pid1 < 0)
-	{
 		perror("fork");
-		exit(EXIT_FAILURE);
-	}
 	if (pid1 == 0)
-	{
-		dup2(fd[1], STDOUT_FILENO);
-		close(fd[0]);
-		close(fd[1]);
-		execute(data->left, envp);
-		exit(EXIT_FAILURE);
-	}
+		exec_pipe(fd, 1, data->left, envp);
 	pid2 = fork();
 	if (pid2 == 0)
-	{
-		dup2(fd[0], STDIN_FILENO);
-		close(fd[1]);
-		close(fd[0]);
-		execute(data->right, envp);
-		exit(EXIT_FAILURE);
-	}
-	close(fd[0]);
-	close(fd[1]);
+		exec_pipe(fd, 2, data->right, envp);
+	close_fd(fd);
 	waitpid(pid1, &status1, 0);
-    waitpid(pid2, &status2, 0);
-    return (WIFEXITED(status2) ? WEXITSTATUS(status2) : 1); // Return last command’s status
+	waitpid(pid2, &status2, 0);
+	if (WIFEXITED(status2))
+		return (WIFEXITED(status2));
+	return (1);
 }
 
 int	redirection(t_data *data, char ***envp)
@@ -113,11 +122,11 @@ int	redirection(t_data *data, char ***envp)
 
 int	execute(t_data *data, char ***envp)
 {
-	int ret;
-	
+	int	ret;
+
 	ret = 1;
 	if (!data)
-		return 0;
+		return (0);
 	if (data->type == EXECUTION)
 		ret = exec(data, *envp);
 	else if (data->type == PIPE)

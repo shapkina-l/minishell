@@ -6,7 +6,7 @@
 /*   By: lshapkin <lshapkin@student.42berlin.de>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/03 01:00:54 by lshapkin          #+#    #+#             */
-/*   Updated: 2025/04/03 21:04:44 by lshapkin         ###   ########.fr       */
+/*   Updated: 2025/04/03 21:22:13 by lshapkin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,7 +35,6 @@ t_data	*create_pipe_node(t_data *left, t_token *token)
 t_data	*parse_pipe(t_token *token)
 {
 	t_data	*left;
-	t_data	*right;
 	t_data	*pipe_node;
 
 	if (!token)

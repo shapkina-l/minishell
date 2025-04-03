@@ -6,7 +6,7 @@
 /*   By: lshapkin <lshapkin@student.42berlin.de>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/05 16:30:03 by lshapkin          #+#    #+#             */
-/*   Updated: 2025/04/02 22:53:51 by lshapkin         ###   ########.fr       */
+/*   Updated: 2025/04/03 21:21:54 by lshapkin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -142,5 +142,8 @@ void	reset_redirections(int original_stdin, int original_stdout);
 int		redirection(t_data *data, char ***envp);
 void	skip_whitespaces(char **input);
 int		handle_env_var(char **input, char *buffer, int buf_index);
+t_data	*parse_pipe(t_token *token);
+t_data	*parse_command(t_token *token);
+t_data	*parse_redirection(t_token *token, t_data *cmd_node);
 
 #endif
