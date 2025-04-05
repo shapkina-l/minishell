@@ -108,6 +108,7 @@ t_data	*parse_command(t_token *token)
 	node = create_new_node();
 	if (!node)
 		return (NULL);
+	//printf("Checking if [%s] is a builtin\n", token->value);
 	builtin = builtin_check(token->value);
 	if (builtin != -1)
 	{

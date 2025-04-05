@@ -108,13 +108,13 @@ int	main(int argc, char **argv, char *envp[])
 		input = ft_readline();
 		if (!input)
 			break ;
-		root = parse_input(input);
+		root = parse_input(input, &last_exit_status);
 		if (!root)
 		{
 			free(input);
 			continue ; // it skips execute and free if root fails
 		}
-		last_exit_status = execute(root, &my_envp);
+		last_exit_status = execute(root, &my_envp, &last_exit_status);
 		free(input);
 		free_exec(root);
 	}

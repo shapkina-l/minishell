@@ -74,7 +74,7 @@ void	free_token_list(t_token *head)
 	}
 }
 
-t_data	*parse_input(char *input)
+t_data	*parse_input(char *input, int *exit_status)
 {
 	t_token	*token_list;
 	t_token	*token;
@@ -82,7 +82,7 @@ t_data	*parse_input(char *input)
 
 	if (!input || !*input)
 		return (NULL);
-	token_list = tokenize(input);
+	token_list = tokenize(input, exit_status);
 	if (!token_list)
 		return (NULL);
 	token = token_list;

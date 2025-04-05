@@ -36,7 +36,7 @@ int	exec(t_data *data, char ***envp)
 //	free_exec(data); //? --> freed in main
 }
 
-int	builtin(t_data *data, char ***envp)
+int	builtin(t_data *data, char ***envp, int *exit_status)
 {
 	if (data->builtin_type == BUILTIN_ECHO)
 		return (ft_echo(data));
@@ -51,7 +51,7 @@ int	builtin(t_data *data, char ***envp)
 	else if (data->builtin_type == BUILTIN_ENV)
 		return (ft_env(*envp));
 	else if (data->builtin_type == BUILTIN_EXIT)
-		return (ft_exit());
+		return (ft_exit(data, exit_status));
 	return (1);
 }
 
@@ -63,25 +63,25 @@ void	close_fd(int fd[2])
 		close(fd[1]);
 }
 
-void	exec_pipe(int fd[2], int var, t_data *exec, char ***envp)
+void	exec_pipe(int fd[2], int var, t_data *exec, char ***envp, int *exit_status)
 {
 	if (var == 1)
 	{
 		dup2(fd[1], STDOUT_FILENO);
 		close_fd(fd);
-		execute(exec, envp);
+		execute(exec, envp, exit_status);
 		exit(EXIT_FAILURE);
 	}
 	else if (var == 2)
 	{
 		dup2(fd[0], STDIN_FILENO);
 		close_fd(fd);
-		execute(exec, envp);
+		execute(exec, envp, exit_status);
 		exit(EXIT_FAILURE);
 	}
 }
 
-int	pipes(t_data *data, char ***envp)
+int	pipes(t_data *data, char ***envp, int *exit_status)
 {
 	int	fd[2];
 	int	pid1;
@@ -95,10 +95,10 @@ int	pipes(t_data *data, char ***envp)
 	if (pid1 < 0)
 		perror("fork");
 	if (pid1 == 0)
-		exec_pipe(fd, 1, data->left, envp);
+		exec_pipe(fd, 1, data->left, envp, exit_status);
 	pid2 = fork();
 	if (pid2 == 0)
-		exec_pipe(fd, 2, data->right, envp);
+		exec_pipe(fd, 2, data->right, envp, exit_status);
 	close_fd(fd);
 	waitpid(pid1, &status1, 0);
 	waitpid(pid2, &status2, 0);
@@ -107,7 +107,7 @@ int	pipes(t_data *data, char ***envp)
 	return (1);
 }
 
-int	redirection(t_data *data, char ***envp)
+int	redirection(t_data *data, char ***envp, int *exit_status)
 {
 	if (data->redirection_type == REDIRECT_INPUT)
 		redirect_input(data);
@@ -117,25 +117,29 @@ int	redirection(t_data *data, char ***envp)
 		// to do
 	else if (data->redirection_type == REDIRECT_APPEND)
 		redirect_append(data);
-	return (execute(data->left, envp));
+	return (execute(data->left, envp, exit_status));
 }
 
-int	execute(t_data *data, char ***envp)
+int	execute(t_data *data, char ***envp, int *exit_status)
 {
 	int	ret;
 
 	ret = 1;
 	if (!data)
-		return (0);
+		return (1);
 	if (data->type == EXECUTION)
 		ret = exec(data, envp);
 	else if (data->type == PIPE)
-		ret = pipes(data, envp);
+		ret = pipes(data, envp, exit_status);
 	else if (data->type == REDIRECTION)
-		ret = redirection(data, envp);
+		ret = redirection(data, envp, exit_status);
 	else if (data->type == BUILTIN)
-		ret = builtin(data, envp);
+		ret = builtin(data, envp, exit_status);
 	reset_redirections(data->original_stdin, data->original_stdout);
+	//printf("CMD: %s\n", data->full_cmd);
+	//for (int i = 0; data->args[i]; i++)
+    //	printf("ARG[%d]: %s\n", i, data->args[i]);
+	*exit_status = ret;
 	return (ret);
 }
 

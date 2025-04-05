@@ -52,13 +52,22 @@ t_token	*tokenize_operator(char **input)
 	return (NULL);
 }
 
-void	tokenize_word_loop(char *buffer, char **input, char quote_char)
+void	tokenize_word_loop(char *buffer, char **input, char quote_char, int *exit_status)
 {
 	int		buf_index;
 
 	buf_index = 0;
 	while (**input && (!ft_strchr(" |<>&()", **input) || quote_char))
 	{
+		if (**input == '$' && *(*input + 1) == '?')
+		{
+			(*input) += 2;
+			char *status_str = ft_itoa(*exit_status);
+			ft_strlcpy(&buffer[buf_index], status_str, 1024 - buf_index);
+			buf_index += ft_strlen(status_str);
+			free(status_str);
+			continue;
+		}
 		if ((**input == '\'' || **input == '"') && quote_char == 0)
 		{
 			quote_char = **input;
@@ -81,7 +90,7 @@ void	tokenize_word_loop(char *buffer, char **input, char quote_char)
 	buffer[buf_index] = '\0';
 }
 
-t_token	*tokenize_word(char **input)
+t_token	*tokenize_word(char **input, int *exit_status)
 {
 	char	*buffer;
 	char	quote_char;
@@ -91,13 +100,13 @@ t_token	*tokenize_word(char **input)
 	buffer = malloc(1024);
 	if (!buffer)
 		return (NULL);
-	tokenize_word_loop(buffer, input, quote_char);
+	tokenize_word_loop(buffer, input, quote_char, exit_status);
 	token = create_token(TOKEN_WORD, ft_strdup(buffer));
 	free(buffer);
 	return (token);
 }
 
-t_token	*tokenize(char *input)
+t_token	*tokenize(char *input, int *exit_status)
 {
 	t_token	*head;
 	t_token	*current;
@@ -114,7 +123,7 @@ t_token	*tokenize(char *input)
 		if (ft_strchr("|<>", *input))
 			new_token = tokenize_operator(&input);
 		else
-			new_token = tokenize_word(&input);
+			new_token = tokenize_word(&input, exit_status);
 		if (!new_token)
 			continue ;
 		if (!head)

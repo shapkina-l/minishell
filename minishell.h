@@ -120,7 +120,7 @@ typedef struct s_data
 	int				original_stdout;
 }	t_data;
 
-int		execute(t_data *data, char ***envp);
+int		execute(t_data *data, char ***envp, int *exit_status);
 void	free_exec(t_data *data); //temp
 int		ft_echo(t_data *data);
 int		ft_cd(t_data *data);
@@ -128,12 +128,12 @@ int		ft_pwd(void);
 int		ft_export(t_data *data, char ***envp);
 int		ft_unset(t_data *data, char ***envp);
 int		ft_env(char *envp[]);
-int		ft_exit(void);
+int		ft_exit(t_data *data, int *exit_status);
 void	redirect_input(t_data *data);
 void	redirect_output(t_data *data);
 void	redirect_append(t_data *data);
-t_token	*tokenize(char *input);
-t_data	*parse_input(char *input);
+t_token	*tokenize(char *input, int *exit_status);
+t_data	*parse_input(char *input, int *exit_status);
 char	*make_cmd(char **cmd_path, char *argv);
 int		ft_strcmp(const char *s1, const char *s2);
 t_data	*create_new_node(void);
@@ -141,7 +141,7 @@ int		builtin_check(char *cmd);
 void	*ft_realloc(void *ptr, size_t old_size, size_t new_size);
 void	my_shell_handler(int signum);
 void	reset_redirections(int original_stdin, int original_stdout);
-int		redirection(t_data *data, char ***envp);
+int		redirection(t_data *data, char ***envp, int *exit_status);
 void	skip_whitespaces(char **input);
 int		handle_env_var(char **input, char *buffer, int buf_index);
 t_data	*parse_pipe(t_token *token);
