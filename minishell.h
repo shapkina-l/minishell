@@ -6,7 +6,7 @@
 /*   By: lshapkin <lshapkin@student.42berlin.de>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/05 16:30:03 by lshapkin          #+#    #+#             */
-/*   Updated: 2025/04/03 21:21:54 by lshapkin         ###   ########.fr       */
+/*   Updated: 2025/04/05 16:38:09 by apaz-mar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,6 +25,8 @@
 # include <readline/history.h>
 # include <signal.h>
 
+extern int	g_in_prompt; // global flag to track when in prompt (parent shell 
+						// waiting for input) vs when executing a command
 typedef enum e_exec_type
 {
 	EXECUTION,

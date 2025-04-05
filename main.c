@@ -6,18 +6,22 @@
 /*   By: lshapkin <lshapkin@student.42berlin.de>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/16 15:16:26 by lshapkin          #+#    #+#             */
-/*   Updated: 2025/04/03 21:47:28 by lshapkin         ###   ########.fr       */
+/*   Updated: 2025/04/05 16:38:19 by apaz-mar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
+
+int		g_in_prompt = 0; // global variable must be defined in a function to allocate space for it
 
 char	*ft_readline(void)
 {
 	char	*input;
 	char	*prompt;
 
+	g_in_prompt = 1;
 	prompt = "minishell>";
+	g_in_prompt = 0;
 	input = readline(prompt);
 	if (input)
 		add_history(input);

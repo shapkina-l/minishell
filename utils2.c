@@ -6,7 +6,7 @@
 /*   By: lshapkin <lshapkin@student.42berlin.de>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/02 21:35:16 by lshapkin          #+#    #+#             */
-/*   Updated: 2025/04/02 23:02:10 by lshapkin         ###   ########.fr       */
+/*   Updated: 2025/04/05 16:37:33 by apaz-mar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,8 +53,11 @@ int	handle_env_var(char **input, char *buffer, int buf_index)
 void	my_shell_handler(int signum)
 {
 	(void)signum;
-	write(1, "\n", 1);
-	rl_replace_line("", 0);
-	rl_on_new_line();
-	rl_redisplay();
+	write(STDOUT_FILENO, "\n", 1);
+	if (g_in_prompt)
+	{
+		rl_replace_line("", 0);
+		rl_on_new_line();
+		rl_redisplay();
+	}
 }

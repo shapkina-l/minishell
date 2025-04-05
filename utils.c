@@ -6,31 +6,41 @@
 /*   By: lshapkin <lshapkin@student.42berlin.de>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/27 21:48:30 by lshapkin          #+#    #+#             */
-/*   Updated: 2025/04/02 22:59:51 by lshapkin         ###   ########.fr       */
+/*   Updated: 2025/04/05 16:37:53 by apaz-mar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
-char	*make_cmd(char **cmd_path, char *argv)
+char	*make_cmd(char **cmd_path, char *argv) //needed to be adapted for the case when PATH=""
+												// that should then bring a command call to cause an error
 {
 	char	*tmp;
 	char	*cmd;
 
 	if (!argv || !*argv)
 		return (NULL);
-	if (!cmd_path)
-	{
+
+	// Case 2: check if PATH is empty
+	if (!cmd_path || !cmd_path[0])
 		return (NULL);
+		
+	// Case 1: absolute or relative path
+	if (argv[0] == '/' || (argv[0] == '.' && argv[1] == '/'))
+	{
+		if (access(argv, X_OK) == 0)
+			return (ft_strdup(argv));
+		else
+			return (NULL);
 	}
-	if (access(argv, 0) == 0)
-		return (ft_strdup(argv));
+
+	// Case 3: search in PATH directories
 	while (*cmd_path)
 	{
 		tmp = ft_strjoin(*cmd_path, "/");
 		cmd = ft_strjoin(tmp, argv);
 		free (tmp);
-		if (access(cmd, 0) == 0)
+		if (access(cmd, X_OK) == 0)
 			return (cmd);
 		free (cmd);
 		cmd_path++;

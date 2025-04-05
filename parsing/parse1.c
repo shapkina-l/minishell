@@ -6,26 +6,40 @@
 /*   By: lshapkin <lshapkin@student.42berlin.de>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/05 17:17:56 by apaz-mar          #+#    #+#             */
-/*   Updated: 2025/04/03 01:05:07 by lshapkin         ###   ########.fr       */
+/*   Updated: 2025/04/05 16:38:34 by apaz-mar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../minishell.h"
 
-void	node_full_cmd(t_token *token, t_data *node)
+void	node_full_cmd(t_token *token, t_data *node) // adapted to handle PATH="" correctly
 {
-	char	*path;
-	char	**cmd_path;
-	char	*full_cmd;
+	char	*path = NULL;
+	char	**cmd_path = NULL;
+	char	*full_cmd = NULL;
+	int		i;
 
+	i = 0;
 	path = getenv("PATH");
-	if (!path)
+	if (!path || !*path)
+	{
+		printf("Path is empty string\n");
 		return ;
+	}
 	cmd_path = ft_split(path, ':');
 	full_cmd = make_cmd(cmd_path, token->value);
+	if (cmd_path)
+	{
+		while (cmd_path[i])
+		{
+			free(cmd_path[i]);
+			i++;
+		}
+		free(cmd_path);
+	}
 	if (!full_cmd)
 	{
-		free(cmd_path);
+		node->full_cmd = NULL;
 		return ;
 	}
 	node->full_cmd = full_cmd;
