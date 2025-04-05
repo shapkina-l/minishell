@@ -6,7 +6,7 @@
 /*   By: lshapkin <lshapkin@student.42berlin.de>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/12 19:01:51 by lshapkin          #+#    #+#             */
-/*   Updated: 2025/04/03 01:10:58 by lshapkin         ###   ########.fr       */
+/*   Updated: 2025/04/05 16:39:01 by apaz-mar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,8 @@ int	ft_export_var_exists(char *new_var, char *envp[])
 	{
 		if (ft_strncmp(envp[j], new_var, strchr(new_var, '=') - new_var) == 0)
 		{
-			envp[j] = new_var;
+			free(envp[j]);
+			envp[j] = ft_strdup(new_var);
 			return (1);
 		}
 		j++;
@@ -43,7 +44,6 @@ void	ft_export_var_create(char *new_var, char ***envp)
 	new_envp[len] = new_var;
 	new_envp[len + 1] = NULL;
 	*envp = new_envp;
-	free (new_envp);
 }
 
 int	ft_export(t_data *data, char ***envp)
@@ -54,7 +54,7 @@ int	ft_export(t_data *data, char ***envp)
 	if (!data->args[1])
 	{
 		i = 0;
-		while (envp[i])
+		while ((*envp)[i])
 		{
 			printf("declare -x %s\n", (*envp)[i]);
 			i++;

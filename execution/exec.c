@@ -6,13 +6,13 @@
 /*   By: lshapkin <lshapkin@student.42berlin.de>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/05 16:43:30 by lshapkin          #+#    #+#             */
-/*   Updated: 2025/04/03 23:36:38 by lshapkin         ###   ########.fr       */
+/*   Updated: 2025/04/05 16:39:09 by apaz-mar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../minishell.h"
 
-int	exec(t_data *data, char **envp)
+int	exec(t_data *data, char ***envp)
 {
 	int	status;
 	int	pid;
@@ -27,7 +27,7 @@ int	exec(t_data *data, char **envp)
 	{
 		signal(SIGINT, SIG_DFL); // Ctrl + C should terminate the child normally
 		signal(SIGQUIT, SIG_DFL); // Ctrl + \ should work normally
-		execve(data->full_cmd, data->args, envp);
+		execve(data->full_cmd, data->args, *envp);
 		perror("execve");
 		exit(EXIT_FAILURE);
 	}
@@ -128,7 +128,7 @@ int	execute(t_data *data, char ***envp)
 	if (!data)
 		return (0);
 	if (data->type == EXECUTION)
-		ret = exec(data, *envp);
+		ret = exec(data, envp);
 	else if (data->type == PIPE)
 		ret = pipes(data, envp);
 	else if (data->type == REDIRECTION)
