@@ -6,23 +6,51 @@
 /*   By: lshapkin <lshapkin@student.42berlin.de>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/12 19:01:51 by lshapkin          #+#    #+#             */
-/*   Updated: 2025/04/05 16:39:01 by apaz-mar         ###   ########.fr       */
+/*   Updated: 2025/04/06 23:25:23 by lshapkin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../minishell.h"
 
+int	is_valid_identifier(char *name)
+{
+	int	i;
+
+	if (!name || !*name)
+		return (0);
+	if (!ft_isalpha(name[0]) && name[0] != '_')
+		return (0);
+	i = 1;
+	while (name[i] && name[i] != '=')
+	{
+		if (!ft_isalnum(name[i]) && name[i] != '_')
+			return (0);
+		i++;
+	}
+	return (1);
+}
+
 int	ft_export_var_exists(char *new_var, char *envp[])
 {
-	int	j;
+	int		j;
+	char	*eq;
+	size_t	len;
+	char	*new_value;
 
+	eq = ft_strchr(new_var, '=');
+	if (!eq)
+		return (-1);
+	len = eq - new_var;
 	j = 0;
 	while (envp[j])
 	{
-		if (ft_strncmp(envp[j], new_var, strchr(new_var, '=') - new_var) == 0)
+		if (ft_strncmp(envp[j], new_var, len) == 0 && envp[j][len] == '=')
 		{
+			new_value = ft_strdup(new_var);
+			if (!new_value)
+				return (-1);
 			free(envp[j]);
-			envp[j] = ft_strdup(new_var);
+			envp[j] = new_value;
 			return (1);
 		}
 		j++;
@@ -30,71 +58,108 @@ int	ft_export_var_exists(char *new_var, char *envp[])
 	return (0);
 }
 
-void	ft_export_var_create(char *new_var, char ***envp)
+int	ft_export_var_create(char *new_var, t_data *data)
 {
 	int		len;
 	char	**new_envp;
+	char	*dup_var;
+	int		i;
 
+	if (!data->my_envp)
+		return (-1);
 	len = 0;
-	while ((*envp)[len])
+	while ((data->my_envp)[len])
 		len++;
-	new_envp = ft_realloc(*envp, len + 1, sizeof(char *) * (len + 2));
+	new_envp = malloc(sizeof(char *) * (len + 2));
 	if (!new_envp)
-		return ;
-	new_envp[len] = new_var;
+		return (-1);
+	i = 0;
+	while (i < len)
+	{
+		new_envp[i] = data->my_envp[i];
+		i++;
+	}
+	dup_var = ft_strdup(new_var);
+	if (!dup_var)
+	{
+		free(new_envp);
+		return (-1);
+	}
+	new_envp[len] = dup_var;
 	new_envp[len + 1] = NULL;
-	*envp = new_envp;
+	free(data->my_envp);
+	data->my_envp = new_envp;
+	return (0);
 }
 
-int	ft_export(t_data *data, char ***envp)
+int	ft_export(t_data *data)
 {
-	int	i;
-	int	var_exists;
+	int		i;
+	int		var_exists;
+	char	*var_name;
+    char	*equals_pos;
 
+	if (!data->my_envp)
+		return (1);
 	if (!data->args[1])
 	{
 		i = 0;
-		while ((*envp)[i])
-		{
-			printf("declare -x %s\n", (*envp)[i]);
-			i++;
-		}
+		while ((data->my_envp)[i])
+			printf("declare -x %s\n", (data->my_envp)[i++]);
 		return (0);
 	}
 	i = 1;
 	while (data->args[i])
 	{
-		var_exists = ft_export_var_exists(data->args[i], *envp);
-		if (!var_exists)
-			ft_export_var_create(data->args[i], envp);
+		var_name = ft_strdup(data->args[i]);
+		if (!var_name)
+			return (1);
+		equals_pos = ft_strchr(var_name, '=');
+		if (equals_pos)
+			*equals_pos = '\0';
+		if (!is_valid_identifier(var_name))
+		{
+			fprintf(stderr, "export: `%s': not a valid identifier\n", data->args[i]); //fix
+			free(var_name);
+			return (1);
+		}
+		free(var_name);
+		if (ft_strchr(data->args[i], '='))
+		{
+			var_exists = ft_export_var_exists(data->args[i], data->my_envp);
+			if (var_exists == -1)
+				return (1);
+			if (var_exists == 0)
+			{
+				if (ft_export_var_create(data->args[i], data) == -1)
+					return (1);
+			}
+		}
 		i++;
 	}
 	return (0);
 }
 
-int	ft_unset(t_data *data, char ***envp)
+int	ft_unset(t_data *data)
 {
 	int	i;
 	int	j;
 
 	if (!data->args[1])
-	{
-		printf("unset: not enough arguments\n");
-		return (1);
-	}
+		return (0);
 	i = 1;
 	while (data->args[i])
 	{
 		j = 0;
-		while ((*envp)[j])
+		while ((data->my_envp)[j])
 		{
-			if (strncmp((*envp)[j], data->args[i], strlen(data->args[i])) == 0 &&
-				(*envp)[j][strlen(data->args[i])] == '=') 
+			if (ft_strncmp((data->my_envp)[j], data->args[i], ft_strlen(data->args[i])) == 0 &&
+				(data->my_envp)[j][strlen(data->args[i])] == '=') 
 			{
-				free((*envp)[j]);
-				while ((*envp)[j])
+				free((data->my_envp)[j]);
+				while ((data->my_envp)[j])
 				{
-					(*envp)[j] = (*envp)[j + 1];
+					(data->my_envp)[j] = (data->my_envp)[j + 1];
 					j++;
 				}
 				break ;

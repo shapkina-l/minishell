@@ -6,7 +6,7 @@
 /*   By: lshapkin <lshapkin@student.42berlin.de>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/27 21:48:30 by lshapkin          #+#    #+#             */
-/*   Updated: 2025/04/05 16:37:53 by apaz-mar         ###   ########.fr       */
+/*   Updated: 2025/04/06 21:29:55 by lshapkin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,7 +48,7 @@ char	*make_cmd(char **cmd_path, char *argv) //needed to be adapted for the case 
 	return (NULL);
 }
 
-t_data	*create_new_node(void)
+t_data	*create_new_node(char **my_envp)
 {
 	t_data	*node;
 
@@ -64,6 +64,7 @@ t_data	*create_new_node(void)
 	node->right = NULL;
 	node->original_stdin = dup(STDIN_FILENO);
 	node->original_stdout = dup(STDOUT_FILENO);
+	node->my_envp = my_envp;
 	return (node);
 }
 

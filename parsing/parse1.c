@@ -6,7 +6,7 @@
 /*   By: lshapkin <lshapkin@student.42berlin.de>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/05 17:17:56 by apaz-mar          #+#    #+#             */
-/*   Updated: 2025/04/05 16:38:34 by apaz-mar         ###   ########.fr       */
+/*   Updated: 2025/04/06 21:34:37 by lshapkin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -98,14 +98,14 @@ void	handle_args(t_token *token, t_data	*node)
 	node->args[i] = NULL;
 }
 
-t_data	*parse_command(t_token *token)
+t_data	*parse_command(t_token *token, char **my_envp)
 {
 	t_data	*node;
 	int		builtin;
 
 	if (!token)
 		return (NULL);
-	node = create_new_node();
+	node = create_new_node(my_envp);
 	if (!node)
 		return (NULL);
 	//printf("Checking if [%s] is a builtin\n", token->value);
@@ -123,7 +123,7 @@ t_data	*parse_command(t_token *token)
 	return (node);
 }
 
-t_data	*parse_redirection(t_token *token, t_data *cmd_node)
+t_data	*parse_redirection(t_token *token, t_data *cmd_node, char **my_envp)
 {
 	t_data	*redir_node;
 
@@ -131,7 +131,7 @@ t_data	*parse_redirection(t_token *token, t_data *cmd_node)
 	{
 		if (!token->next || token->next->type != TOKEN_WORD)
 			return (NULL);
-		redir_node = create_new_node();
+		redir_node = create_new_node(my_envp);
 		if (!redir_node)
 			return (NULL);
 		if (token->type == TOKEN_REDIRECT_IN)

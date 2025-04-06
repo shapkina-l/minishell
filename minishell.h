@@ -6,7 +6,7 @@
 /*   By: lshapkin <lshapkin@student.42berlin.de>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/05 16:30:03 by lshapkin          #+#    #+#             */
-/*   Updated: 2025/04/05 16:38:09 by apaz-mar         ###   ########.fr       */
+/*   Updated: 2025/04/06 22:26:19 by lshapkin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -118,34 +118,35 @@ typedef struct s_data
 	int				end_flag;
 	int				original_stdin;
 	int				original_stdout;
+	char			**my_envp;
 }	t_data;
 
-int		execute(t_data *data, char ***envp, int *exit_status);
-void	free_exec(t_data *data); //temp
+int		execute(t_data *data, int *exit_status);
+void	free_exec(t_data *data);
 int		ft_echo(t_data *data);
 int		ft_cd(t_data *data);
 int		ft_pwd(void);
-int		ft_export(t_data *data, char ***envp);
-int		ft_unset(t_data *data, char ***envp);
+int		ft_export(t_data *data);
+int		ft_unset(t_data *data);
 int		ft_env(char *envp[]);
 int		ft_exit(t_data *data, int *exit_status);
 void	redirect_input(t_data *data);
 void	redirect_output(t_data *data);
 void	redirect_append(t_data *data);
 t_token	*tokenize(char *input, int *exit_status);
-t_data	*parse_input(char *input, int *exit_status);
+t_data	*parse_input(char *input, int *exit_status, char **my_envp);
 char	*make_cmd(char **cmd_path, char *argv);
 int		ft_strcmp(const char *s1, const char *s2);
-t_data	*create_new_node(void);
+t_data	*create_new_node(char **my_envp);
 int		builtin_check(char *cmd);
 void	*ft_realloc(void *ptr, size_t old_size, size_t new_size);
 void	my_shell_handler(int signum);
 void	reset_redirections(int original_stdin, int original_stdout);
-int		redirection(t_data *data, char ***envp, int *exit_status);
+int		redirection(t_data *data, int *exit_status);
 void	skip_whitespaces(char **input);
 int		handle_env_var(char **input, char *buffer, int buf_index);
-t_data	*parse_pipe(t_token *token);
-t_data	*parse_command(t_token *token);
-t_data	*parse_redirection(t_token *token, t_data *cmd_node);
+t_data	*parse_pipe(t_token *token, char **my_envp);
+t_data	*parse_command(t_token *token, char **my_envp);
+t_data	*parse_redirection(t_token *token, t_data *cmd_node, char **my_envp);
 
 #endif

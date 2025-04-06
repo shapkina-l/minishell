@@ -6,13 +6,13 @@
 /*   By: lshapkin <lshapkin@student.42berlin.de>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/05 16:43:30 by lshapkin          #+#    #+#             */
-/*   Updated: 2025/04/05 16:39:09 by apaz-mar         ###   ########.fr       */
+/*   Updated: 2025/04/06 22:27:58 by lshapkin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../minishell.h"
 
-int	exec(t_data *data, char ***envp)
+int	exec(t_data *data)
 {
 	int	status;
 	int	pid;
@@ -27,7 +27,7 @@ int	exec(t_data *data, char ***envp)
 	{
 		signal(SIGINT, SIG_DFL); // Ctrl + C should terminate the child normally
 		signal(SIGQUIT, SIG_DFL); // Ctrl + \ should work normally
-		execve(data->full_cmd, data->args, *envp);
+		execve(data->full_cmd, data->args, data->my_envp);
 		perror("execve");
 		exit(EXIT_FAILURE);
 	}
@@ -36,7 +36,7 @@ int	exec(t_data *data, char ***envp)
 //	free_exec(data); //? --> freed in main
 }
 
-int	builtin(t_data *data, char ***envp, int *exit_status)
+int	builtin(t_data *data, int *exit_status)
 {
 	if (data->builtin_type == BUILTIN_ECHO)
 		return (ft_echo(data));
@@ -45,11 +45,11 @@ int	builtin(t_data *data, char ***envp, int *exit_status)
 	else if (data->builtin_type == BUILTIN_PWD)
 		return (ft_pwd());
 	else if (data->builtin_type == BUILTIN_EXPORT)
-		return (ft_export(data, envp));
+		return (ft_export(data));
 	else if (data->builtin_type == BUILTIN_UNSET)
-		return (ft_unset(data, envp));
+		return (ft_unset(data));
 	else if (data->builtin_type == BUILTIN_ENV)
-		return (ft_env(*envp));
+		return (ft_env(data->my_envp));
 	else if (data->builtin_type == BUILTIN_EXIT)
 		return (ft_exit(data, exit_status));
 	return (1);
@@ -63,25 +63,25 @@ void	close_fd(int fd[2])
 		close(fd[1]);
 }
 
-void	exec_pipe(int fd[2], int var, t_data *exec, char ***envp, int *exit_status)
+void	exec_pipe(int fd[2], int var, t_data *exec, int *exit_status)
 {
 	if (var == 1)
 	{
 		dup2(fd[1], STDOUT_FILENO);
 		close_fd(fd);
-		execute(exec, envp, exit_status);
+		execute(exec, exit_status);
 		exit(EXIT_FAILURE);
 	}
 	else if (var == 2)
 	{
 		dup2(fd[0], STDIN_FILENO);
 		close_fd(fd);
-		execute(exec, envp, exit_status);
+		execute(exec, exit_status);
 		exit(EXIT_FAILURE);
 	}
 }
 
-int	pipes(t_data *data, char ***envp, int *exit_status)
+int	pipes(t_data *data, int *exit_status)
 {
 	int	fd[2];
 	int	pid1;
@@ -95,10 +95,10 @@ int	pipes(t_data *data, char ***envp, int *exit_status)
 	if (pid1 < 0)
 		perror("fork");
 	if (pid1 == 0)
-		exec_pipe(fd, 1, data->left, envp, exit_status);
+		exec_pipe(fd, 1, data->left, exit_status);
 	pid2 = fork();
 	if (pid2 == 0)
-		exec_pipe(fd, 2, data->right, envp, exit_status);
+		exec_pipe(fd, 2, data->right, exit_status);
 	close_fd(fd);
 	waitpid(pid1, &status1, 0);
 	waitpid(pid2, &status2, 0);
@@ -107,7 +107,7 @@ int	pipes(t_data *data, char ***envp, int *exit_status)
 	return (1);
 }
 
-int	redirection(t_data *data, char ***envp, int *exit_status)
+int	redirection(t_data *data, int *exit_status)
 {
 	if (data->redirection_type == REDIRECT_INPUT)
 		redirect_input(data);
@@ -117,10 +117,10 @@ int	redirection(t_data *data, char ***envp, int *exit_status)
 		// to do
 	else if (data->redirection_type == REDIRECT_APPEND)
 		redirect_append(data);
-	return (execute(data->left, envp, exit_status));
+	return (execute(data->left, exit_status));
 }
 
-int	execute(t_data *data, char ***envp, int *exit_status)
+int	execute(t_data *data, int *exit_status)
 {
 	int	ret;
 
@@ -128,17 +128,14 @@ int	execute(t_data *data, char ***envp, int *exit_status)
 	if (!data)
 		return (1);
 	if (data->type == EXECUTION)
-		ret = exec(data, envp);
+		ret = exec(data);
 	else if (data->type == PIPE)
-		ret = pipes(data, envp, exit_status);
+		ret = pipes(data, exit_status);
 	else if (data->type == REDIRECTION)
-		ret = redirection(data, envp, exit_status);
+		ret = redirection(data, exit_status);
 	else if (data->type == BUILTIN)
-		ret = builtin(data, envp, exit_status);
+		ret = builtin(data, exit_status);
 	reset_redirections(data->original_stdin, data->original_stdout);
-	//printf("CMD: %s\n", data->full_cmd);
-	//for (int i = 0; data->args[i]; i++)
-    //	printf("ARG[%d]: %s\n", i, data->args[i]);
 	*exit_status = ret;
 	return (ret);
 }

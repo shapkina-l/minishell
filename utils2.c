@@ -6,7 +6,7 @@
 /*   By: lshapkin <lshapkin@student.42berlin.de>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/02 21:35:16 by lshapkin          #+#    #+#             */
-/*   Updated: 2025/04/05 16:37:33 by apaz-mar         ###   ########.fr       */
+/*   Updated: 2025/04/06 20:50:13 by lshapkin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,15 +26,19 @@ int	handle_env_var(char **input, char *buffer, int buf_index)
 
 	(*input)++;
 	var_len = 0;
+	value = "$";
 	while (**input && (ft_isalnum(**input) || **input == '_'))
 	{
 		var_name[var_len++] = **input;
 		(*input)++;
 	}
-	var_name[var_len] = '\0';
-	value = getenv(var_name);
-	if (!value)
-		value = "";
+	if (var_len != 0)
+	{
+		var_name[var_len] = '\0';
+		value = getenv(var_name);
+		if (!value)
+			value = "";
+	}
 	while (*value)
 		buffer[buf_index++] = *value++;
 	return (buf_index);

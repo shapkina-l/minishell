@@ -6,7 +6,7 @@
 /*   By: lshapkin <lshapkin@student.42berlin.de>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/18 15:17:19 by lshapkin          #+#    #+#             */
-/*   Updated: 2025/04/03 01:03:29 by lshapkin         ###   ########.fr       */
+/*   Updated: 2025/04/06 21:03:24 by lshapkin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,18 +55,19 @@ t_token	*tokenize_operator(char **input)
 void	tokenize_word_loop(char *buffer, char **input, char quote_char, int *exit_status)
 {
 	int		buf_index;
+	char	*status_str;
 
 	buf_index = 0;
 	while (**input && (!ft_strchr(" |<>&()", **input) || quote_char))
 	{
-		if (**input == '$' && *(*input + 1) == '?')
+		if (**input == '$' && *(*input + 1) == '?' && quote_char != '\'')
 		{
 			(*input) += 2;
-			char *status_str = ft_itoa(*exit_status);
+			status_str = ft_itoa(*exit_status);
 			ft_strlcpy(&buffer[buf_index], status_str, 1024 - buf_index);
 			buf_index += ft_strlen(status_str);
 			free(status_str);
-			continue;
+			continue ;
 		}
 		if ((**input == '\'' || **input == '"') && quote_char == 0)
 		{
@@ -76,8 +77,9 @@ void	tokenize_word_loop(char *buffer, char **input, char quote_char, int *exit_s
 		}
 		if (**input == quote_char)
 		{
+			quote_char = 0;
 			(*input)++;
-			break ;
+			continue ;
 		}
 		if (**input == '$' && quote_char != '\'')
 		{
@@ -101,6 +103,11 @@ t_token	*tokenize_word(char **input, int *exit_status)
 	if (!buffer)
 		return (NULL);
 	tokenize_word_loop(buffer, input, quote_char, exit_status);
+	if (buffer[0] == '\0') // Handle case where buffer is empty (e.g., standalone "")
+	{
+		free(buffer);
+		return (NULL); // Or create an empty token, depending on your needs
+	}
 	token = create_token(TOKEN_WORD, ft_strdup(buffer));
 	free(buffer);
 	return (token);

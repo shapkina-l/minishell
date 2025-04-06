@@ -6,7 +6,7 @@
 /*   By: lshapkin <lshapkin@student.42berlin.de>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/16 15:16:26 by lshapkin          #+#    #+#             */
-/*   Updated: 2025/04/05 16:38:19 by apaz-mar         ###   ########.fr       */
+/*   Updated: 2025/04/06 22:19:26 by lshapkin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -108,13 +108,14 @@ int	main(int argc, char **argv, char *envp[])
 		input = ft_readline();
 		if (!input)
 			break ;
-		root = parse_input(input, &last_exit_status);
+		root = parse_input(input, &last_exit_status, my_envp);
 		if (!root)
 		{
 			free(input);
 			continue ; // it skips execute and free if root fails
 		}
-		last_exit_status = execute(root, &my_envp, &last_exit_status);
+		last_exit_status = execute(root, &last_exit_status);
+		my_envp = root->my_envp;
 		free(input);
 		free_exec(root);
 	}
