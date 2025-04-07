@@ -6,7 +6,7 @@
 /*   By: lshapkin <lshapkin@student.42berlin.de>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/12 19:01:51 by lshapkin          #+#    #+#             */
-/*   Updated: 2025/04/06 23:25:23 by lshapkin         ###   ########.fr       */
+/*   Updated: 2025/04/07 18:19:56 by lshapkin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -97,7 +97,7 @@ int	ft_export(t_data *data)
 	int		i;
 	int		var_exists;
 	char	*var_name;
-    char	*equals_pos;
+	char	*equals_pos;
 
 	if (!data->my_envp)
 		return (1);
@@ -120,6 +120,7 @@ int	ft_export(t_data *data)
 		if (!is_valid_identifier(var_name))
 		{
 			fprintf(stderr, "export: `%s': not a valid identifier\n", data->args[i]); //fix
+			//perror("export: not a valid identifier\n");
 			free(var_name);
 			return (1);
 		}

@@ -6,7 +6,7 @@
 /*   By: lshapkin <lshapkin@student.42berlin.de>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/12 19:01:51 by lshapkin          #+#    #+#             */
-/*   Updated: 2025/04/06 22:27:47 by lshapkin         ###   ########.fr       */
+/*   Updated: 2025/04/07 18:05:04 by lshapkin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,7 +42,14 @@ int	ft_cd(t_data *data)
 	char	*path;
 
 	if (data->args[1])
+	{
+		if (data->args[2])
+		{
+			fprintf(stderr, "cd: too many arguments");
+			return (1);
+		}
 		path = data->args[1];
+	}
 	else
 		path = getenv("HOME");
 	if (!path)
@@ -84,8 +91,9 @@ int	ft_env(char *envp[])
 
 int	is_numeric(char *str)
 {
-	int i = 0;
+	int	i;
 
+	i = 0;
 	if (!str || !*str)
 		return (0);
 	if (str[i] == '+' || str[i] == '-')
@@ -137,23 +145,19 @@ int	ft_exit(t_data *data, int *exit_status)
 	long	code;
 
 	printf("exit\n");
-
 	if (!data->args[1]) // No arguments
 		exit(*exit_status);
-
 	if (!is_numeric(data->args[1])) // Non-numeric
 	{
 		fprintf(stderr, "minishell: exit: %s: numeric argument required\n", data->args[1]);
 		exit(2);
 	}
-
 	if (data->args[2]) // Too many arguments
 	{
 		fprintf(stderr, "minishell: exit: too many arguments\n");
 		*exit_status = 1;
 		return (1); // Don't exit
 	}
-
 	code = ft_atol(data->args[1]); // Handles + / - and quotes
 	exit((unsigned char)code);
 }
