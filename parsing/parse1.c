@@ -6,7 +6,7 @@
 /*   By: lshapkin <lshapkin@student.42berlin.de>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/05 17:17:56 by apaz-mar          #+#    #+#             */
-/*   Updated: 2025/04/06 21:34:37 by lshapkin         ###   ########.fr       */
+/*   Updated: 2025/04/09 16:26:40 by lshapkin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -73,29 +73,64 @@ int	count_arguments(t_token *token, t_data *node)
 	return (count_args);
 }
 
-void	handle_args(t_token *token, t_data	*node)
+void handle_all_args(t_token *token, t_data *node)
 {
-	int		count_args;
-	int		i;
+    int count_args = 0;
+    t_token *tmp;
+    int i;
 
-	count_args = count_arguments(token, node);
-	i = 1;
-	token = token->next;
-	while (token && token->type == TOKEN_WORD && i < count_args)
-	{
-		node->args[i] = ft_strdup(token->value);
-		if (!node->args[i])
-		{
-			while (i > 0)
-				free(node->args[--i]);
-			free(node->args);
-			free(node);
-			return ;
-		}
-		i++;
-		token = token->next;
-	}
-	node->args[i] = NULL;
+    // First pass: count all command arguments (words that aren't redirection targets)
+    tmp = token;
+    while (tmp && tmp->type != TOKEN_PIPE)
+    {
+        if (tmp->type == TOKEN_WORD)
+        {
+            count_args++;
+        }
+        else if (tmp->type >= TOKEN_REDIRECT_IN && tmp->type <= TOKEN_APPEND)
+        {
+            // Skip the redirection target
+            if (tmp->next && tmp->next->type == TOKEN_WORD)
+                tmp = tmp->next;
+        }
+        tmp = tmp->next;
+    }
+
+    // Allocate arguments array
+    node->args = malloc((count_args + 1) * sizeof(char *));
+    if (!node->args)
+    {
+        free(node);
+        return;
+    }
+
+    // Second pass: fill arguments array
+    tmp = token;
+    i = 0;
+    while (tmp && tmp->type != TOKEN_PIPE && i < count_args)
+    {
+        if (tmp->type == TOKEN_WORD)
+        {
+            node->args[i] = ft_strdup(tmp->value);
+            if (!node->args[i])
+            {
+                while (i > 0)
+                    free(node->args[--i]);
+                free(node->args);
+                free(node);
+                return;
+            }
+            i++;
+        }
+        else if (tmp->type >= TOKEN_REDIRECT_IN && tmp->type <= TOKEN_APPEND)
+        {
+            // Skip the redirection target
+            if (tmp->next && tmp->next->type == TOKEN_WORD)
+                tmp = tmp->next;
+        }
+        tmp = tmp->next;
+    }
+    node->args[i] = NULL;
 }
 
 t_data	*parse_command(t_token *token, char **my_envp)
@@ -108,7 +143,6 @@ t_data	*parse_command(t_token *token, char **my_envp)
 	node = create_new_node(my_envp);
 	if (!node)
 		return (NULL);
-	//printf("Checking if [%s] is a builtin\n", token->value);
 	builtin = builtin_check(token->value);
 	if (builtin != -1)
 	{
@@ -119,37 +153,51 @@ t_data	*parse_command(t_token *token, char **my_envp)
 		node->type = EXECUTION;
 	if (node->type == EXECUTION)
 		node_full_cmd(token, node);
-	handle_args(token, node);
+	handle_all_args(token, node);
 	return (node);
 }
 
-t_data	*parse_redirection(t_token *token, t_data *cmd_node, char **my_envp)
+t_data *parse_redirection(t_token *token, t_data *cmd_node, char **my_envp)
 {
-	t_data	*redir_node;
+    t_data *redir_node;
+    t_token *tmp;
+    t_data *result;
 
-	while (token && (token->type >= TOKEN_REDIRECT_IN && token->type <= TOKEN_APPEND))
-	{
-		if (!token->next || token->next->type != TOKEN_WORD)
-			return (NULL);
-		redir_node = create_new_node(my_envp);
-		if (!redir_node)
-			return (NULL);
-		if (token->type == TOKEN_REDIRECT_IN)
-			redir_node->redirection_type = REDIRECT_INPUT;
-		else if (token->type == TOKEN_REDIRECT_OUT)
-			redir_node->redirection_type = REDIRECT_OUTPUT;
-		else if (token->type == TOKEN_APPEND)
-			redir_node->redirection_type = REDIRECT_APPEND;
-		else if (token->type == TOKEN_HEREDOC)
-			redir_node->redirection_type = REDIRECT_HEREDOC;
-		redir_node->redirection_file = ft_strdup(token->next->value);
-		if (!redir_node->redirection_file)
-			return (NULL);
-		redir_node->type = REDIRECTION;
-		redir_node->left = cmd_node;
-		cmd_node = redir_node;
-		token = token->next->next;
-	}
-	return (cmd_node);
+    result = cmd_node;
+    tmp = token;
+    
+    while (tmp && tmp->type != TOKEN_PIPE)
+    {
+        if (tmp->type >= TOKEN_REDIRECT_IN && tmp->type <= TOKEN_APPEND)
+        {
+            if (!tmp->next || tmp->next->type != TOKEN_WORD)
+                return (NULL);
+            
+            redir_node = create_new_node(my_envp);
+            if (!redir_node)
+                return (NULL);
+            
+            if (tmp->type == TOKEN_REDIRECT_IN)
+                redir_node->redirection_type = REDIRECT_INPUT;
+            else if (tmp->type == TOKEN_REDIRECT_OUT)
+                redir_node->redirection_type = REDIRECT_OUTPUT;
+            else if (tmp->type == TOKEN_APPEND)
+                redir_node->redirection_type = REDIRECT_APPEND;
+            else if (tmp->type == TOKEN_HEREDOC)
+                redir_node->redirection_type = REDIRECT_HEREDOC;
+            
+            redir_node->redirection_file = ft_strdup(tmp->next->value);
+            if (!redir_node->redirection_file)
+                return (NULL);
+            
+            redir_node->type = REDIRECTION;
+            redir_node->left = result;
+            result = redir_node;
+			tmp = tmp->next;
+        }
+        tmp = tmp->next;
+    }
+    
+    return (result);
 }
 

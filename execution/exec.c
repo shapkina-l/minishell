@@ -6,7 +6,7 @@
 /*   By: lshapkin <lshapkin@student.42berlin.de>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/05 16:43:30 by lshapkin          #+#    #+#             */
-/*   Updated: 2025/04/07 21:28:46 by lshapkin         ###   ########.fr       */
+/*   Updated: 2025/04/09 17:14:50 by lshapkin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -91,39 +91,39 @@ int	pipes(t_data *data, int *exit_status)
 	int	status1;
 	int	status2;
 	int ret;
-	
-	//move to separate function
-    // Special case for export/unset on left side of pipe
-    if (data->left->type == BUILTIN && 
-        (data->left->builtin_type == BUILTIN_EXPORT ||
-         data->left->builtin_type == BUILTIN_UNSET))
-    {
-        // Execute the builtin in the current process to update the environment
-        ret = builtin(data->left, exit_status);
-        
-        // Now proceed with the pipe for the right side
-        if (pipe(fd) == -1)
-            perror("pipe");
-            
-        pid2 = fork();
-        if (pid2 < 0)
-            perror("fork");
-        if (pid2 == 0)
-        {
-            // We only need to get input from pipe if there was output from left
-            close(fd[1]);
-            dup2(fd[0], STDIN_FILENO);
-            close(fd[0]);
-            ret = execute(data->right, exit_status);
-            exit(ret);
-        }
-        close(fd[0]);
-        close(fd[1]);
-        waitpid(pid2, &status2, 0);
-        if (WIFEXITED(status2))
-            return (WEXITSTATUS(status2));
-        return (1);
-    }
+
+	// move to separate function
+	//  Special case for export/unset on left side of pipe
+	if (data->left->type == BUILTIN &&
+		(data->left->builtin_type == BUILTIN_EXPORT ||
+		 data->left->builtin_type == BUILTIN_UNSET))
+	{
+		// Execute the builtin in the current process to update the environment
+		ret = builtin(data->left, exit_status);
+
+		// Now proceed with the pipe for the right side
+		if (pipe(fd) == -1)
+			perror("pipe");
+
+		pid2 = fork();
+		if (pid2 < 0)
+			perror("fork");
+		if (pid2 == 0)
+		{
+			// We only need to get input from pipe if there was output from left
+			close(fd[1]);
+			dup2(fd[0], STDIN_FILENO);
+			close(fd[0]);
+			ret = execute(data->right, exit_status);
+			exit(ret);
+		}
+		close(fd[0]);
+		close(fd[1]);
+		waitpid(pid2, &status2, 0);
+		if (WIFEXITED(status2))
+			return (WEXITSTATUS(status2));
+		return (1);
+	}
 	if (pipe(fd) == -1)
 		perror("pipe");
 	pid1 = fork();
@@ -144,14 +144,43 @@ int	pipes(t_data *data, int *exit_status)
 
 int	redirection(t_data *data, int *exit_status)
 {
+	t_data	*tmp;
+	int		ret;
+	int		fd;
+
+	//check all the files
+	tmp = data->left;
+	while (tmp)
+	{
+		if (tmp->type == REDIRECTION)
+		{
+			fd = open(tmp->redirection_file, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+			if (fd == -1) 
+			{
+				perror("No such file or directory");
+				return (1);
+			}
+		}
+		tmp = tmp->left;
+	}
+	tmp = data->left;
+	while (tmp)
+	{
+		if (tmp->type == REDIRECTION
+			&& data->redirection_type == tmp->redirection_type)
+			tmp->redirection_type = -1;
+		tmp = tmp->left;
+	}
 	if (data->redirection_type == REDIRECT_INPUT)
-		redirect_input(data);
+		ret = redirect_input(data);
 	else if (data->redirection_type == REDIRECT_OUTPUT)
-		redirect_output(data);
+		ret = redirect_output(data);
 	//else if (data->redirection_type == REDIRECT_HEREDOC)
 		// to do
 	else if (data->redirection_type == REDIRECT_APPEND)
-		redirect_append(data);
+		ret = redirect_append(data);
+	if (ret == 1)
+		return (1);
 	return (execute(data->left, exit_status));
 }
 

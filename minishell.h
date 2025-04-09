@@ -6,7 +6,7 @@
 /*   By: lshapkin <lshapkin@student.42berlin.de>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/05 16:30:03 by lshapkin          #+#    #+#             */
-/*   Updated: 2025/04/06 22:26:19 by lshapkin         ###   ########.fr       */
+/*   Updated: 2025/04/09 17:04:06 by lshapkin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -130,9 +130,9 @@ int		ft_export(t_data *data);
 int		ft_unset(t_data *data);
 int		ft_env(char *envp[]);
 int		ft_exit(t_data *data, int *exit_status);
-void	redirect_input(t_data *data);
-void	redirect_output(t_data *data);
-void	redirect_append(t_data *data);
+int		redirect_input(t_data *data);
+int		redirect_output(t_data *data);
+int		redirect_append(t_data *data);
 t_token	*tokenize(char *input, int *exit_status);
 t_data	*parse_input(char *input, int *exit_status, char **my_envp);
 char	*make_cmd(char **cmd_path, char *argv);
