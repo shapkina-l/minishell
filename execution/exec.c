@@ -6,7 +6,7 @@
 /*   By: lshapkin <lshapkin@student.42berlin.de>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/05 16:43:30 by lshapkin          #+#    #+#             */
-/*   Updated: 2025/04/09 17:14:50 by lshapkin         ###   ########.fr       */
+/*   Updated: 2025/04/10 00:19:00 by lshapkin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -83,28 +83,22 @@ void	exec_pipe(int fd[2], int var, t_data *exec, int *exit_status)
 	}
 }
 
-int	pipes(t_data *data, int *exit_status)
-{
-	int	fd[2];
-	int	pid1;
-	int	pid2;
-	int	status1;
-	int	status2;
-	int ret;
 
-	// move to separate function
-	//  Special case for export/unset on left side of pipe
-	if (data->left->type == BUILTIN &&
-		(data->left->builtin_type == BUILTIN_EXPORT ||
-		 data->left->builtin_type == BUILTIN_UNSET))
+int	special_case_export(t_data *data, int fd[2], int *exit_status)
+{
+	int	ret;
+	int pid2;
+	int status2;
+
+	if (data->left->type == BUILTIN 
+		&& (data->left->builtin_type == BUILTIN_EXPORT
+			|| data->left->builtin_type == BUILTIN_UNSET))
 	{
 		// Execute the builtin in the current process to update the environment
 		ret = builtin(data->left, exit_status);
-
 		// Now proceed with the pipe for the right side
 		if (pipe(fd) == -1)
 			perror("pipe");
-
 		pid2 = fork();
 		if (pid2 < 0)
 			perror("fork");
@@ -124,7 +118,24 @@ int	pipes(t_data *data, int *exit_status)
 			return (WEXITSTATUS(status2));
 		return (1);
 	}
-	if (pipe(fd) == -1)
+	return (-1);
+}
+
+int	pipes(t_data *data, int *exit_status)
+{
+	int	fd[2];
+	int	pid1;
+	int	pid2;
+	int	status1;
+	int	status2;
+	int check;
+
+	// move to separate function
+	//  Special case for export/unset on left side of pipe
+	check = special_case_export(data, fd, exit_status);
+	if (check != -1)
+		return (check);
+			if (pipe(fd) == -1)
 		perror("pipe");
 	pid1 = fork();
 	if (pid1 < 0)
@@ -132,6 +143,8 @@ int	pipes(t_data *data, int *exit_status)
 	if (pid1 == 0)
 		exec_pipe(fd, 1, data->left, exit_status);
 	pid2 = fork();
+	if (pid2 < 0)
+		perror("fork");
 	if (pid2 == 0)
 		exec_pipe(fd, 2, data->right, exit_status);
 	close_fd(fd);
@@ -154,7 +167,7 @@ int	redirection(t_data *data, int *exit_status)
 	{
 		if (tmp->type == REDIRECTION)
 		{
-			fd = open(tmp->redirection_file, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+			fd = open(tmp->redirection_file, O_WRONLY | O_CREAT | O_TRUNC, 0644); //readonly
 			if (fd == -1) 
 			{
 				perror("No such file or directory");

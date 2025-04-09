@@ -6,7 +6,7 @@
 /*   By: lshapkin <lshapkin@student.42berlin.de>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/12 19:01:51 by lshapkin          #+#    #+#             */
-/*   Updated: 2025/04/07 18:19:56 by lshapkin         ###   ########.fr       */
+/*   Updated: 2025/04/10 00:24:42 by lshapkin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -154,8 +154,8 @@ int	ft_unset(t_data *data)
 		j = 0;
 		while ((data->my_envp)[j])
 		{
-			if (ft_strncmp((data->my_envp)[j], data->args[i], ft_strlen(data->args[i])) == 0 &&
-				(data->my_envp)[j][strlen(data->args[i])] == '=') 
+			if (ft_strncmp((data->my_envp)[j], data->args[i], ft_strlen(data->args[i])) == 0 
+				&& (data->my_envp)[j][strlen(data->args[i])] == '=')
 			{
 				free((data->my_envp)[j]);
 				while ((data->my_envp)[j])

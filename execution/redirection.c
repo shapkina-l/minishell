@@ -6,13 +6,13 @@
 /*   By: lshapkin <lshapkin@student.42berlin.de>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/16 12:37:47 by lshapkin          #+#    #+#             */
-/*   Updated: 2025/04/09 17:02:30 by lshapkin         ###   ########.fr       */
+/*   Updated: 2025/04/10 00:25:10 by lshapkin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../minishell.h"
 
-int    redirect_input(t_data *data)
+int	redirect_input(t_data *data)
 {
 	int	fd;
 

@@ -6,7 +6,7 @@
 /*   By: lshapkin <lshapkin@student.42berlin.de>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/03 01:00:54 by lshapkin          #+#    #+#             */
-/*   Updated: 2025/04/09 15:30:34 by lshapkin         ###   ########.fr       */
+/*   Updated: 2025/04/10 00:21:51 by lshapkin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,35 +32,27 @@ t_data	*create_pipe_node(t_data *left, t_token *token, char **my_envp)
 	return (pipe_node);
 }
 
-t_data *parse_pipe(t_token *token, char **my_envp)
+t_data	*parse_pipe(t_token *token, char **my_envp)
 {
-    t_data *left;
-    t_data *pipe_node;
-    t_token *tmp;
+	t_data	*left;
+	t_data	*pipe_node;
+	t_token	*tmp;
 
-    if (!token)
-        return (NULL);
-    
-    // First, create command node with all arguments
-    left = parse_command(token, my_envp);
-    if (!left)
-        return (NULL);
-    
-    // Then, process all redirections
-    left = parse_redirection(token, left, my_envp);
-    if (!left)
-        return (NULL);
-    
-    // Find pipe token if present
-    tmp = token;
-    while (tmp && tmp->type != TOKEN_PIPE)
-        tmp = tmp->next;
-    
-    if (!tmp || tmp->type != TOKEN_PIPE)
-        return (left);
-    
-    pipe_node = create_pipe_node(left, tmp, my_envp);
-    return (pipe_node);
+	if (!token)
+		return (NULL);
+	left = parse_command(token, my_envp);
+	if (!left)
+		return (NULL);
+	left = parse_redirection(token, left, my_envp);
+	if (!left)
+		return (NULL);
+	tmp = token;
+	while (tmp && tmp->type != TOKEN_PIPE)
+		tmp = tmp->next;
+	if (!tmp || tmp->type != TOKEN_PIPE)
+		return (left);
+	pipe_node = create_pipe_node(left, tmp, my_envp);
+	return (pipe_node);
 }
 
 void	free_token_list(t_token *head)
