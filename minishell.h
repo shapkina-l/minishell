@@ -6,7 +6,7 @@
 /*   By: lshapkin <lshapkin@student.42berlin.de>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/05 16:30:03 by lshapkin          #+#    #+#             */
-/*   Updated: 2025/04/09 17:04:06 by lshapkin         ###   ########.fr       */
+/*   Updated: 2025/04/10 21:24:12 by lshapkin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,7 @@
 # include <readline/readline.h>
 # include <readline/history.h>
 # include <signal.h>
+# include <sys/stat.h>
 
 extern int	g_in_prompt; // global flag to track when in prompt (parent shell 
 						// waiting for input) vs when executing a command
@@ -148,5 +149,6 @@ int		handle_env_var(char **input, char *buffer, int buf_index);
 t_data	*parse_pipe(t_token *token, char **my_envp);
 t_data	*parse_command(t_token *token, char **my_envp);
 t_data	*parse_redirection(t_token *token, t_data *cmd_node, char **my_envp);
+void	handle_all_args(t_token *token, t_data *node);
 
 #endif

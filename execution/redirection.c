@@ -6,7 +6,7 @@
 /*   By: lshapkin <lshapkin@student.42berlin.de>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/16 12:37:47 by lshapkin          #+#    #+#             */
-/*   Updated: 2025/04/10 00:25:10 by lshapkin         ###   ########.fr       */
+/*   Updated: 2025/04/10 16:06:22 by lshapkin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,7 +32,7 @@ int	redirect_output(t_data *data)
 	int	fd;
 
 	fd = open(data->redirection_file, O_WRONLY | O_CREAT | O_TRUNC, 0644);
-	if (fd == -1) 
+	if (fd == -1)
 	{
 		perror("Error opening file");
 		return (1);

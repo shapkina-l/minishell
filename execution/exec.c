@@ -6,11 +6,30 @@
 /*   By: lshapkin <lshapkin@student.42berlin.de>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/05 16:43:30 by lshapkin          #+#    #+#             */
-/*   Updated: 2025/04/10 00:19:00 by lshapkin         ###   ########.fr       */
+/*   Updated: 2025/04/11 12:01:21 by lshapkin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../minishell.h"
+
+void	exec_file_check(t_data *data)
+{
+	struct stat	file_stat;
+
+	if (access(data->args[0], F_OK) == 0)
+	{
+		if (stat(data->args[0], &file_stat) == 0 && S_ISDIR(file_stat.st_mode))
+			fprintf(stderr, "%s: Is a directory\n", data->args[0]);
+		else
+			fprintf(stderr, "%s: Permission denied\n", data->args[0]);
+		exit(126);
+	}
+	else
+	{
+		fprintf(stderr, "%s: No such file or directory\n", data->args[0]);
+		exit(127);
+	}
+}
 
 int	exec(t_data *data)
 {
@@ -27,6 +46,18 @@ int	exec(t_data *data)
 	{
 		signal(SIGINT, SIG_DFL); // Ctrl + C should terminate the child normally
 		signal(SIGQUIT, SIG_DFL); // Ctrl + \ should work normally
+		if (data->full_cmd == NULL)
+		{
+			if (data->args[0][0] == '/' ||
+				(data->args[0][0] == '.' && (data->args[0][1] == '/' ||
+				(data->args[0][1] == '.' && data->args[0][2] == '/'))))
+				exec_file_check(data);
+			else
+			{
+				fprintf(stderr, "%s: command not found\n", data->args[0]);
+				exit(127);
+			}
+		}
 		execve(data->full_cmd, data->args, data->my_envp);
 		perror("execve");
 		exit(EXIT_FAILURE);
@@ -87,10 +118,10 @@ void	exec_pipe(int fd[2], int var, t_data *exec, int *exit_status)
 int	special_case_export(t_data *data, int fd[2], int *exit_status)
 {
 	int	ret;
-	int pid2;
-	int status2;
+	int	pid2;
+	int	status2;
 
-	if (data->left->type == BUILTIN 
+	if (data->left->type == BUILTIN
 		&& (data->left->builtin_type == BUILTIN_EXPORT
 			|| data->left->builtin_type == BUILTIN_UNSET))
 	{
@@ -130,12 +161,10 @@ int	pipes(t_data *data, int *exit_status)
 	int	status2;
 	int check;
 
-	// move to separate function
-	//  Special case for export/unset on left side of pipe
 	check = special_case_export(data, fd, exit_status);
 	if (check != -1)
 		return (check);
-			if (pipe(fd) == -1)
+	if (pipe(fd) == -1)
 		perror("pipe");
 	pid1 = fork();
 	if (pid1 < 0)
@@ -155,23 +184,35 @@ int	pipes(t_data *data, int *exit_status)
 	return (1);
 }
 
-int	redirection(t_data *data, int *exit_status)
+int check_all_files(t_data *data)
 {
 	t_data	*tmp;
-	int		ret;
 	int		fd;
 
-	//check all the files
-	tmp = data->left;
+	tmp = data;
 	while (tmp)
 	{
 		if (tmp->type == REDIRECTION)
 		{
-			fd = open(tmp->redirection_file, O_WRONLY | O_CREAT | O_TRUNC, 0644); //readonly
-			if (fd == -1) 
+			if (tmp->redirection_type == REDIRECT_OUTPUT)
 			{
-				perror("No such file or directory");
-				return (1);
+				fd = open(tmp->redirection_file, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+				if (fd == -1)
+				{
+					perror("No such file or directory");
+					return (1);
+				}
+				close (fd);
+			}
+			else if (tmp->redirection_type == REDIRECT_INPUT)
+			{
+				fd = open(tmp->redirection_file, O_RDONLY);
+				if (fd == -1)
+				{
+					perror("No such file or directory");
+					return (1);
+				}
+				close (fd);
 			}
 		}
 		tmp = tmp->left;
@@ -184,6 +225,15 @@ int	redirection(t_data *data, int *exit_status)
 			tmp->redirection_type = -1;
 		tmp = tmp->left;
 	}
+	return (0);
+}
+
+int	redirection(t_data *data, int *exit_status)
+{
+	int		ret;
+
+	if (check_all_files(data) == 1)
+		return (1);
 	if (data->redirection_type == REDIRECT_INPUT)
 		ret = redirect_input(data);
 	else if (data->redirection_type == REDIRECT_OUTPUT)
@@ -216,4 +266,3 @@ int	execute(t_data *data, int *exit_status)
 	*exit_status = ret;
 	return (ret);
 }
-

@@ -6,35 +6,34 @@
 /*   By: lshapkin <lshapkin@student.42berlin.de>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/27 21:48:30 by lshapkin          #+#    #+#             */
-/*   Updated: 2025/04/06 21:29:55 by lshapkin         ###   ########.fr       */
+/*   Updated: 2025/04/10 20:45:48 by lshapkin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
-char	*make_cmd(char **cmd_path, char *argv) //needed to be adapted for the case when PATH=""
-												// that should then bring a command call to cause an error
+char	*make_cmd(char **cmd_path, char *argv)
 {
-	char	*tmp;
-	char	*cmd;
+	char		*tmp;
+	char		*cmd;
+	struct stat	file_stat;
 
 	if (!argv || !*argv)
 		return (NULL);
-
-	// Case 2: check if PATH is empty
 	if (!cmd_path || !cmd_path[0])
 		return (NULL);
-		
-	// Case 1: absolute or relative path
-	if (argv[0] == '/' || (argv[0] == '.' && argv[1] == '/'))
+	if (argv[0] == '/' || (argv[0] == '.'
+			&& (argv[1] == '/' || (argv[1] == '.' && argv[2] == '/'))))
 	{
-		if (access(argv, X_OK) == 0)
-			return (ft_strdup(argv));
-		else
-			return (NULL);
+		if (access(argv, F_OK) == 0)
+		{
+			if (stat(argv, &file_stat) == 0 && S_ISDIR(file_stat.st_mode))
+				return (NULL);
+			else if (access(argv, X_OK) == 0)
+				return (ft_strdup(argv));
+		}
+		return (NULL);
 	}
-
-	// Case 3: search in PATH directories
 	while (*cmd_path)
 	{
 		tmp = ft_strjoin(*cmd_path, "/");
@@ -56,9 +55,9 @@ t_data	*create_new_node(char **my_envp)
 	if (!node)
 		return (NULL);
 	node->type = -1;
-	node->args = NULL;
 	node->full_cmd = NULL;
-	node->redirection_type = 0;
+	node->args = NULL;
+	node->redirection_type = -1;
 	node->redirection_file = NULL;
 	node->left = NULL;
 	node->right = NULL;
