@@ -65,3 +65,10 @@ void	my_shell_handler(int signum)
 		rl_redisplay();
 	}
 }
+
+int	ft_isspace(char c)
+{
+	return (c == ' ' || c == '\t' || c == '\n'
+		|| c == '\v' || c == '\f' || c == '\r');
+}
+

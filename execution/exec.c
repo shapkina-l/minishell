@@ -12,21 +12,40 @@
 
 #include "../minishell.h"
 
+void	print_error(const char *prefix, const char *msg)
+{
+	if (prefix)
+	{
+		write(2, prefix, strlen(prefix));
+		write(2, ": ", 2);
+	}
+	if (msg)
+	{
+		write(2, msg, strlen(msg));
+		write(2, "\n", 1);
+	}
+}
+
 void	exec_file_check(t_data *data)
 {
 	struct stat	file_stat;
 
 	if (access(data->args[0], F_OK) == 0)
 	{
-		if (stat(data->args[0], &file_stat) == 0 && S_ISDIR(file_stat.st_mode))
-			fprintf(stderr, "%s: Is a directory\n", data->args[0]);
+		if (stat(data->args[0], &file_stat) == 0)
+		{
+			if (S_ISDIR(file_stat.st_mode))
+				print_error(data->args[0], "Is a directory");
+			else
+				print_error(data->args[0], "Permission denied");
+		}
 		else
-			fprintf(stderr, "%s: Permission denied\n", data->args[0]);
+			print_error(data->args[0], "stat failed");
 		exit(126);
 	}
 	else
 	{
-		fprintf(stderr, "%s: No such file or directory\n", data->args[0]);
+		print_error(data->args[0], "No such file or directory");
 		exit(127);
 	}
 }
@@ -35,6 +54,10 @@ int	exec(t_data *data)
 {
 	int	status;
 	int	pid;
+
+	// ✅ Add this check early: no args or empty command
+	if (!data->args || !data->args[0] || data->args[0][0] == '\0')
+		return (0); // Bash returns 0 when given nothing to execute
 
 	pid = fork();
 	if (pid < 0)
@@ -54,17 +77,31 @@ int	exec(t_data *data)
 				exec_file_check(data);
 			else
 			{
-				fprintf(stderr, "%s: command not found\n", data->args[0]);
+				print_error(data->args[0], "command not found");
 				exit(127);
 			}
 		}
+		if (access(data->full_cmd, X_OK) == -1) // check if the file exists and is executable before calling execve
+		{
+			if (access(data->full_cmd, F_OK) == 0)
+				exit(0); // Bash does not complain for non-executable files without shebang
+			else
+			{
+				perror(data->full_cmd);
+				exit(126); // Permission denied
+			}
+		}
 		execve(data->full_cmd, data->args, data->my_envp);
+		if (errno == ENOEXEC)
+			exit(0); // Bash: silent ignore if not a valid binary/script
 		perror("execve");
 		exit(EXIT_FAILURE);
 	}
 	waitpid(pid, &status, 0);
-	return (WIFEXITED(status) ? WEXITSTATUS(status) : 1);
-//	free_exec(data); //? --> freed in main
+	if (WIFEXITED(status))
+		return (WEXITSTATUS(status));
+	else
+		return (1);
 }
 
 int	builtin(t_data *data, int *exit_status)
@@ -94,26 +131,47 @@ void	close_fd(int fd[2])
 		close(fd[1]);
 }
 
+int	has_output_redirection(t_data *data)
+{
+	if (!data)
+		return (0);
+	if (data->type == REDIRECTION &&
+		(data->redirection_type == REDIRECT_OUTPUT || data->redirection_type == REDIRECT_APPEND))
+		return (1);
+	return (has_output_redirection(data->left) || has_output_redirection(data->right));
+}
+
+int	has_input_redirection(t_data *data)
+{
+	if (!data)
+		return (0);
+	if (data->type == REDIRECTION &&
+		(data->redirection_type == REDIRECT_INPUT || data->redirection_type == REDIRECT_HEREDOC))
+		return (1);
+	return (has_input_redirection(data->left) || has_input_redirection(data->right));
+}
+
 void	exec_pipe(int fd[2], int var, t_data *exec, int *exit_status)
 {
 	int	ret;
 
 	if (var == 1)
 	{
-		dup2(fd[1], STDOUT_FILENO);
+		if (fd[1] != -1) // Only dup2 if no redirection
+			dup2(fd[1], STDOUT_FILENO);
 		close_fd(fd);
 		ret = execute(exec, exit_status);
 		exit(ret);
 	}
 	else if (var == 2)
 	{
-		dup2(fd[0], STDIN_FILENO);
+		if (fd[0] != -1)
+			dup2(fd[0], STDIN_FILENO);
 		close_fd(fd);
 		ret = execute(exec, exit_status);
 		exit(ret);
 	}
 }
-
 
 int	special_case_export(t_data *data, int fd[2], int *exit_status)
 {
@@ -152,99 +210,158 @@ int	special_case_export(t_data *data, int fd[2], int *exit_status)
 	return (-1);
 }
 
+int	check_all_files(t_data *data)
+{
+	if (!data)
+		return (0);
+	if (data->left && check_all_files(data->left))
+		return (1); // 🚨 check left side first
+	if (data->right && check_all_files(data->right))
+		return (1);
+	if (data->type == REDIRECTION)
+	{
+		int fd = -1;
+		if (data->redirection_type == REDIRECT_INPUT)
+			fd = open(data->redirection_file, O_RDONLY);
+		else if (data->redirection_type == REDIRECT_OUTPUT)
+			fd = open(data->redirection_file, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+		else if (data->redirection_type == REDIRECT_APPEND)
+			fd = open(data->redirection_file, O_WRONLY | O_CREAT | O_APPEND, 0644);
+		if (fd == -1)
+		{
+			perror(data->redirection_file);
+			return (1);
+		}
+		close(fd);
+	}
+	return (0);
+}
+
+void apply_redirection(t_data *redir)
+{
+	if (redir->redirection_type == REDIRECT_INPUT)
+		redirect_input(redir);
+	else if (redir->redirection_type == REDIRECT_OUTPUT)
+		redirect_output(redir);
+	else if (redir->redirection_type == REDIRECT_APPEND)
+		redirect_append(redir);
+}
+
+void apply_redirections(t_data *data)
+{
+	if (!data)
+		return;
+	if (data->left)
+		apply_redirections(data->left);
+	if (data->type == REDIRECTION)
+		apply_redirection(data);
+	if (data->right)
+		apply_redirections(data->right);
+}
+
 int	pipes(t_data *data, int *exit_status)
 {
 	int	fd[2];
-	int	pid1;
-	int	pid2;
-	int	status1;
-	int	status2;
+	int	pid1 = -1;
+	int	pid2 = -1;
+	int	status1 = 0;
+	int	status2 = 0;
 	int check;
 
 	check = special_case_export(data, fd, exit_status);
 	if (check != -1)
 		return (check);
+
 	if (pipe(fd) == -1)
+	{
 		perror("pipe");
+		return (1);
+	}
+	// LEFT child
 	pid1 = fork();
 	if (pid1 < 0)
 		perror("fork");
 	if (pid1 == 0)
-		exec_pipe(fd, 1, data->left, exit_status);
+	{
+		signal(SIGINT, SIG_DFL);
+		signal(SIGQUIT, SIG_DFL);
+		signal(SIGPIPE, SIG_IGN); // ✅ avoid broken pipe signals
+
+		// Redirect stdout to pipe only if no output redirection
+		if (!has_output_redirection(data->left))
+			dup2(fd[1], STDOUT_FILENO);
+		else
+			close(fd[1]); // prevent pipe from receiving redirected output
+
+		close(fd[0]); // always close read end
+
+		// ✅ redirections in child
+		if (data->left->type == REDIRECTION && check_all_files(data->left) == 0)
+			apply_redirections(data->left);
+		exit(execute(data->left, exit_status));
+	}
+
+	// RIGHT child
 	pid2 = fork();
 	if (pid2 < 0)
 		perror("fork");
 	if (pid2 == 0)
-		exec_pipe(fd, 2, data->right, exit_status);
+	{
+		signal(SIGINT, SIG_DFL);
+		signal(SIGQUIT, SIG_DFL);
+		signal(SIGPIPE, SIG_IGN); // ✅ avoid broken pipe signals
+
+		// Redirect stdin to pipe only if no input redirection
+		if (!has_input_redirection(data->right))
+			dup2(fd[0], STDIN_FILENO);
+		else
+			close(fd[0]); // prevent reading from pipe if already redirected
+
+		close(fd[1]); // always close write end
+
+		// ✅ redirections in child
+		if (data->right->type == REDIRECTION && check_all_files(data->right) == 0)
+			apply_redirections(data->right);
+		exit(execute(data->right, exit_status));
+	}
+
 	close_fd(fd);
-	waitpid(pid1, &status1, 0);
-	waitpid(pid2, &status2, 0);
-	if (WIFEXITED(status2))
+	if (pid1 != -1)
+		waitpid(pid1, &status1, 0);
+	if (pid2 != -1)
+		waitpid(pid2, &status2, 0);
+
+	if (pid2 != -1 && WIFEXITED(status2))
 		return (WEXITSTATUS(status2));
+	if (pid1 != -1 && WIFEXITED(status1))
+		return (WEXITSTATUS(status1));
 	return (1);
 }
 
-int check_all_files(t_data *data)
+t_data *find_last_redirection(t_data *data, int type)
 {
-	t_data	*tmp;
-	int		fd;
+	if (!data)
+		return (NULL);
 
-	tmp = data;
-	while (tmp)
-	{
-		if (tmp->type == REDIRECTION)
-		{
-			if (tmp->redirection_type == REDIRECT_OUTPUT)
-			{
-				fd = open(tmp->redirection_file, O_WRONLY | O_CREAT | O_TRUNC, 0644);
-				if (fd == -1)
-				{
-					perror("No such file or directory");
-					return (1);
-				}
-				close (fd);
-			}
-			else if (tmp->redirection_type == REDIRECT_INPUT)
-			{
-				fd = open(tmp->redirection_file, O_RDONLY);
-				if (fd == -1)
-				{
-					perror("No such file or directory");
-					return (1);
-				}
-				close (fd);
-			}
-		}
-		tmp = tmp->left;
-	}
-	tmp = data->left;
-	while (tmp)
-	{
-		if (tmp->type == REDIRECTION
-			&& data->redirection_type == tmp->redirection_type)
-			tmp->redirection_type = -1;
-		tmp = tmp->left;
-	}
-	return (0);
+	t_data *left = find_last_redirection(data->left, type);
+	t_data *right = find_last_redirection(data->right, type);
+
+	if (right)
+		return (right);
+	if (left)
+		return (left);
+	if (data->type == REDIRECTION && data->redirection_type == type)
+		return (data);
+	return NULL;
 }
 
-int	redirection(t_data *data, int *exit_status)
+t_data *get_command_node(t_data *data)
 {
-	int		ret;
-
-	if (check_all_files(data) == 1)
-		return (1);
-	if (data->redirection_type == REDIRECT_INPUT)
-		ret = redirect_input(data);
-	else if (data->redirection_type == REDIRECT_OUTPUT)
-		ret = redirect_output(data);
-	//else if (data->redirection_type == REDIRECT_HEREDOC)
-		// to do
-	else if (data->redirection_type == REDIRECT_APPEND)
-		ret = redirect_append(data);
-	if (ret == 1)
-		return (1);
-	return (execute(data->left, exit_status));
+	if (!data)
+		return NULL;
+	if (data->type != REDIRECTION)
+		return (data);
+	return (get_command_node(data->left)); // left is always the actual command
 }
 
 int	execute(t_data *data, int *exit_status)
@@ -259,7 +376,17 @@ int	execute(t_data *data, int *exit_status)
 	else if (data->type == PIPE)
 		ret = pipes(data, exit_status);
 	else if (data->type == REDIRECTION)
-		ret = redirection(data, exit_status);
+	{
+		t_data *command_node = get_command_node(data);
+		if (!command_node || check_all_files(data)) // ✅ don't run if redirection failed
+			return (1);
+		// ✅ Apply redirections here (non-pipe case)
+		apply_redirections(data);
+		if (command_node->type == EXECUTION || command_node->type == BUILTIN)
+			ret = execute(command_node, exit_status);
+		else
+			return (1); // suppress execution if invalid
+	}
 	else if (data->type == BUILTIN)
 		ret = builtin(data, exit_status);
 	reset_redirections(data->original_stdin, data->original_stdout);

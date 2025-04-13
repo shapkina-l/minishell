@@ -52,14 +52,18 @@ t_token	*tokenize_operator(char **input)
 	return (NULL);
 }
 
-void	tokenize_word_loop(char *buffer, char **input, char quote_char, int *exit_status)
+void	tokenize_word_loop(char *buffer, char **input, int *exit_status)
 {
 	int		buf_index;
 	char	*status_str;
+	char	quote_char = 0;
 
 	buf_index = 0;
-	while (**input && (!ft_strchr(" |<>&()", **input) || quote_char))
+	while (**input)
 	{
+		if (!quote_char && ft_strchr(" \t|<>", **input)) // there can be an operator in the middle of a word, then break and the loop will handle the operator
+			break ;
+	
 		if (**input == '$' && *(*input + 1) == '?' && quote_char != '\'')
 		{
 			(*input) += 2;
@@ -95,14 +99,12 @@ void	tokenize_word_loop(char *buffer, char **input, char quote_char, int *exit_s
 t_token	*tokenize_word(char **input, int *exit_status)
 {
 	char	*buffer;
-	char	quote_char;
 	t_token	*token;
 
-	quote_char = 0;
 	buffer = malloc(1024);
 	if (!buffer)
 		return (NULL);
-	tokenize_word_loop(buffer, input, quote_char, exit_status);
+	tokenize_word_loop(buffer, input, exit_status);
 	if (buffer[0] == '\0') // Handle case where buffer is empty (e.g., standalone "")
 	{
 		free(buffer);

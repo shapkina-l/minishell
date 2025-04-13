@@ -45,13 +45,12 @@ int	count_all_cmd_args(t_token *token)
 	t_token	*tmp;
 	int		count_args;
 
+	count_args = 0;
 	tmp = token;
 	while (tmp && tmp->type != TOKEN_PIPE)
 	{
 		if (tmp->type == TOKEN_WORD)
-		{
 			count_args++;
-		}
 		else if (tmp->type >= TOKEN_REDIRECT_IN && tmp->type <= TOKEN_APPEND)
 		{
 			if (tmp->next && tmp->next->type == TOKEN_WORD)
@@ -81,6 +80,11 @@ void	fill_args_array(t_token *token, t_data *node, int count_args)
 	{
 		if (tmp->type == TOKEN_WORD)
 		{
+			if (tmp->value[0] == '\0') // skip empty tokens like from $EMPTY
+			{
+				tmp = tmp->next;
+				continue;
+			}
 			node->args[i] = ft_strdup(tmp->value);
 			if (!node->args[i])
 			{
@@ -91,6 +95,7 @@ void	fill_args_array(t_token *token, t_data *node, int count_args)
 		}
 		else if (tmp->type >= TOKEN_REDIRECT_IN && tmp->type <= TOKEN_APPEND)
 		{
+		// skip the next token if it's the redirection target (a WORD)
 			if (tmp->next && tmp->next->type == TOKEN_WORD)
 				tmp = tmp->next;
 		}
@@ -112,4 +117,10 @@ void	handle_all_args(t_token *token, t_data *node)
 		return ;
 	}
 	fill_args_array(token, node, count_args);
+	if (!node->args[0]) // All args got skipped (e.g., $EMPTY became "")
+	{
+		free(node->args);
+		node->args = NULL;
+		return ;
+	}
 }

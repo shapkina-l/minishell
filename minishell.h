@@ -25,6 +25,7 @@
 # include <readline/history.h>
 # include <signal.h>
 # include <sys/stat.h>
+# include <errno.h>
 
 extern int	g_in_prompt; // global flag to track when in prompt (parent shell 
 						// waiting for input) vs when executing a command
@@ -122,6 +123,14 @@ typedef struct s_data
 	char			**my_envp;
 }	t_data;
 
+typedef struct s_redirect_set
+{
+	char	*input_file;
+	char	*output_file;
+	char	*append_file;
+}	t_redirect_set;
+
+
 int		execute(t_data *data, int *exit_status);
 void	free_exec(t_data *data);
 int		ft_echo(t_data *data);
@@ -150,5 +159,6 @@ t_data	*parse_pipe(t_token *token, char **my_envp);
 t_data	*parse_command(t_token *token, char **my_envp);
 t_data	*parse_redirection(t_token *token, t_data *cmd_node, char **my_envp);
 void	handle_all_args(t_token *token, t_data *node);
+int		ft_isspace(char c);
 
 #endif

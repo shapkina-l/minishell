@@ -12,15 +12,14 @@
 
 #include "../minishell.h"
 
-t_data	*create_pipe_node(t_data *left, t_token *token, char **my_envp)
+t_data	*create_pipe_node(t_data *left, t_token *right_token, char **my_envp)
 {
 	t_data	*pipe_node;
 	t_data	*right;
 
-	token = token->next;
-	if (!token)
+	if (!right_token)
 		return (free(left), NULL);
-	right = parse_pipe(token, my_envp);
+	right = parse_pipe(right_token, my_envp);
 	if (!right)
 		return (free(left), NULL);
 	pipe_node = create_new_node(my_envp);
@@ -37,21 +36,40 @@ t_data	*parse_pipe(t_token *token, char **my_envp)
 	t_data	*left;
 	t_data	*pipe_node;
 	t_token	*tmp;
+	t_token	*pipe_token;
 
 	if (!token)
 		return (NULL);
+	// Step 1: Find the first pipe token
+	tmp = token;
+	while (tmp && tmp->type != TOKEN_PIPE)
+		tmp = tmp->next;
+
+	if (!tmp || tmp->type != TOKEN_PIPE)
+	{
+		// no pipe, parse full command + redirections
+		left = parse_command(token, my_envp);
+		if (!left)
+			return (NULL);
+		left = parse_redirection(token, left, my_envp);
+		if (!left)
+			return (NULL);
+		return (left);
+	}	
+	pipe_token = tmp->next; // the node after the pipe (right side)
+
+	tmp->next = NULL; //cut token list for left side
+
+	// Step 2: Parse left side up to the pipe
 	left = parse_command(token, my_envp);
 	if (!left)
 		return (NULL);
 	left = parse_redirection(token, left, my_envp);
 	if (!left)
 		return (NULL);
-	tmp = token;
-	while (tmp && tmp->type != TOKEN_PIPE)
-		tmp = tmp->next;
-	if (!tmp || tmp->type != TOKEN_PIPE)
-		return (left);
-	pipe_node = create_pipe_node(left, tmp, my_envp);
+
+	// Step 3: Create pipe node and recursively handle right
+	pipe_node = create_pipe_node(left, pipe_token, my_envp);
 	return (pipe_node);
 }
 
