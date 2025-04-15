@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   minishell.h                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lshapkin <lshapkin@student.42berlin.de>    +#+  +:+       +#+        */
+/*   By: lshapkin <lshapkin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/05 16:30:03 by lshapkin          #+#    #+#             */
-/*   Updated: 2025/04/10 21:24:12 by lshapkin         ###   ########.fr       */
+/*   Updated: 2025/04/15 17:29:11 by lshapkin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -160,5 +160,12 @@ t_data	*parse_command(t_token *token, char **my_envp);
 t_data	*parse_redirection(t_token *token, t_data *cmd_node, char **my_envp);
 void	handle_all_args(t_token *token, t_data *node);
 int		ft_isspace(char c);
+void	print_error(const char *prefix, const char *msg);
+void	exec_file_check(t_data *data);
+void	close_fd(int fd[2]);
+t_data	*find_last_redirection(t_data *data, int type);
+t_data	*get_command_node(t_data *data);
+int		special_case_export(t_data *data, int fd[2], int *exit_status);
+int		builtin(t_data *data, int *exit_status);
 
 #endif
