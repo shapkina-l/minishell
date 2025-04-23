@@ -6,7 +6,7 @@
 /*   By: lshapkin <lshapkin@student.42berlin.de>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/27 21:48:30 by lshapkin          #+#    #+#             */
-/*   Updated: 2025/04/10 20:45:48 by lshapkin         ###   ########.fr       */
+/*   Updated: 2025/04/23 20:14:11 by lshapkin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,6 +59,7 @@ t_data	*create_new_node(char **my_envp)
 	node->args = NULL;
 	node->redirection_type = -1;
 	node->redirection_file = NULL;
+	node->is_delimiter_quoted = 0;
 	node->left = NULL;
 	node->right = NULL;
 	node->original_stdin = dup(STDIN_FILENO);

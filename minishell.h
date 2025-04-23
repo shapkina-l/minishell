@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   minishell.h                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lshapkin <lshapkin@student.42.fr>          +#+  +:+       +#+        */
+/*   By: lshapkin <lshapkin@student.42berlin.de>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/05 16:30:03 by lshapkin          #+#    #+#             */
-/*   Updated: 2025/04/15 17:29:11 by lshapkin         ###   ########.fr       */
+/*   Updated: 2025/04/23 20:17:01 by lshapkin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -121,6 +121,7 @@ typedef struct s_data
 	int				original_stdin;
 	int				original_stdout;
 	char			**my_envp;
+	int				is_delimiter_quoted;
 }	t_data;
 
 typedef struct s_redirect_set
@@ -167,5 +168,8 @@ t_data	*find_last_redirection(t_data *data, int type);
 t_data	*get_command_node(t_data *data);
 int		special_case_export(t_data *data, int fd[2], int *exit_status);
 int		builtin(t_data *data, int *exit_status);
+int		handle_heredoc(t_data *data, int *exit_status);
+int		redirect_heredoc(t_data *data, int *exit_status);
+void	cleanup_heredoc_files(t_data *root);
 
 #endif

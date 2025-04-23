@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   exec.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lshapkin <lshapkin@student.42.fr>          +#+  +:+       +#+        */
+/*   By: lshapkin <lshapkin@student.42berlin.de>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/05 16:43:30 by lshapkin          #+#    #+#             */
-/*   Updated: 2025/04/15 17:39:19 by lshapkin         ###   ########.fr       */
+/*   Updated: 2025/04/23 20:30:36 by lshapkin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -132,11 +132,13 @@ int	check_all_files(t_data *data)
 	if (!data)
 		return (0);
 	if (data->left && check_all_files(data->left))
-		return (1); // 🚨 check left side first
+		return (1);
 	if (data->right && check_all_files(data->right))
 		return (1);
 	if (data->type == REDIRECTION)
 	{
+		if (data->redirection_type == REDIRECT_HEREDOC)
+			return (0);
 		int fd = -1;
 		if (data->redirection_type == REDIRECT_INPUT)
 			fd = open(data->redirection_file, O_RDONLY);
@@ -146,7 +148,6 @@ int	check_all_files(t_data *data)
 			fd = open(data->redirection_file, O_WRONLY | O_CREAT | O_APPEND, 0644);
 		if (fd == -1)
 		{
-			//perror(data->redirection_file);
 			return (1);
 		}
 		close(fd);
@@ -154,7 +155,7 @@ int	check_all_files(t_data *data)
 	return (0);
 }
 
-void apply_redirection(t_data *redir)
+void apply_redirection(t_data *redir, int *exit_status)
 {
 	if (redir->redirection_type == REDIRECT_INPUT)
 		redirect_input(redir);
@@ -162,18 +163,20 @@ void apply_redirection(t_data *redir)
 		redirect_output(redir);
 	else if (redir->redirection_type == REDIRECT_APPEND)
 		redirect_append(redir);
+	else if (redir->redirection_type == REDIRECT_HEREDOC)
+		redirect_heredoc(redir, exit_status);
 }
 
-void apply_redirections(t_data *data)
+void apply_redirections(t_data *data, int *exit_status)
 {
 	if (!data)
-		return;
+		return ;
 	if (data->left)
-		apply_redirections(data->left);
+		apply_redirections(data->left, exit_status);
 	if (data->type == REDIRECTION)
-		apply_redirection(data);
+		apply_redirection(data, exit_status);
 	if (data->right)
-		apply_redirections(data->right);
+		apply_redirections(data->right, exit_status);
 }
 
 int	pipes(t_data *data, int *exit_status)
@@ -203,7 +206,8 @@ int	pipes(t_data *data, int *exit_status)
 		signal(SIGINT, SIG_DFL);
 		signal(SIGQUIT, SIG_DFL);
 		signal(SIGPIPE, SIG_IGN); // ✅ avoid broken pipe signals
-
+		if (data->left->type == REDIRECTION && check_all_files(data->left) == 0)
+			apply_redirections(data->left, exit_status);
 		// Redirect stdout to pipe only if no output redirection
 		if (!has_output_redirection(data->left))
 			dup2(fd[1], STDOUT_FILENO);
@@ -213,11 +217,9 @@ int	pipes(t_data *data, int *exit_status)
 		close(fd[0]); // always close read end
 
 		// ✅ redirections in child
-		if (data->left->type == REDIRECTION && check_all_files(data->left) == 0)
-			apply_redirections(data->left);
+		
 		exit(execute(data->left, exit_status));
 	}
-
 	// RIGHT child
 	pid2 = fork();
 	if (pid2 < 0)
@@ -228,6 +230,8 @@ int	pipes(t_data *data, int *exit_status)
 		signal(SIGQUIT, SIG_DFL);
 		signal(SIGPIPE, SIG_IGN); // ✅ avoid broken pipe signals
 
+		if (data->right->type == REDIRECTION && check_all_files(data->right) == 0)
+		apply_redirections(data->right, exit_status);
 		// Redirect stdin to pipe only if no input redirection
 		if (!has_input_redirection(data->right))
 			dup2(fd[0], STDIN_FILENO);
@@ -237,11 +241,9 @@ int	pipes(t_data *data, int *exit_status)
 		close(fd[1]); // always close write end
 
 		// ✅ redirections in child
-		if (data->right->type == REDIRECTION && check_all_files(data->right) == 0)
-			apply_redirections(data->right);
+
 		exit(execute(data->right, exit_status));
 	}
-
 	close_fd(fd);
 	if (pid1 != -1)
 		waitpid(pid1, &status1, 0);
@@ -274,7 +276,7 @@ int	execute(t_data *data, int *exit_status)
 		if (check_all_files(data)) // ✅ don't run if redirection failed
 			return (perror(data->redirection_file), 1);
 		// ✅ Apply redirections here (non-pipe case)
-		apply_redirections(data);
+		apply_redirections(data, exit_status);
 		if (command_node->type == EXECUTION || command_node->type == BUILTIN)
 			ret = execute(command_node, exit_status);
 		else

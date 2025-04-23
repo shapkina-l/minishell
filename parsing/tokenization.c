@@ -6,7 +6,7 @@
 /*   By: lshapkin <lshapkin@student.42berlin.de>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/18 15:17:19 by lshapkin          #+#    #+#             */
-/*   Updated: 2025/04/06 21:03:24 by lshapkin         ###   ########.fr       */
+/*   Updated: 2025/04/23 19:57:33 by lshapkin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -63,7 +63,6 @@ void	tokenize_word_loop(char *buffer, char **input, int *exit_status)
 	{
 		if (!quote_char && ft_strchr(" \t|<>", **input)) // there can be an operator in the middle of a word, then break and the loop will handle the operator
 			break ;
-	
 		if (**input == '$' && *(*input + 1) == '?' && quote_char != '\'')
 		{
 			(*input) += 2;
