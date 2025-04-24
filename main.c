@@ -21,8 +21,8 @@ char	*ft_readline(void)
 
 	g_in_prompt = 1;
 	prompt = "minishell>";
-	g_in_prompt = 0;
 	input = readline(prompt);
+	g_in_prompt = 0;
 	if (input)
 		add_history(input);
 	return (input);
