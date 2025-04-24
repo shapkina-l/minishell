@@ -49,7 +49,7 @@ int	count_all_cmd_args(t_token *token)
 	tmp = token;
 	while (tmp && tmp->type != TOKEN_PIPE)
 	{
-		if (tmp->type == TOKEN_WORD)
+		if (tmp->type == TOKEN_WORD && tmp->value && tmp->value[0] != '\0')
 			count_args++;
 		else if (tmp->type >= TOKEN_REDIRECT_IN && tmp->type <= TOKEN_APPEND)
 		{
