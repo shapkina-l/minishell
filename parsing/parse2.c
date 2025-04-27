@@ -36,7 +36,7 @@ t_data	*parse_pipe(t_token *token, char **my_envp)
 	t_data	*left;
 	t_data	*pipe_node;
 	t_token	*tmp;
-	t_token	*pipe_token;
+	t_token	*right_tokens;
 
 	if (!token)
 		return (NULL);
@@ -56,20 +56,26 @@ t_data	*parse_pipe(t_token *token, char **my_envp)
 			return (NULL);
 		return (left);
 	}	
-	pipe_token = tmp->next; // the node after the pipe (right side)
+	right_tokens = tmp->next; // for freeing the tokens after the cut
 
 	tmp->next = NULL; //cut token list for left side
 
 	// Step 2: Parse left side up to the pipe
 	left = parse_command(token, my_envp);
 	if (!left)
+	{
+		free_token_list(right_tokens);
 		return (NULL);
+	}
 	left = parse_redirection(token, left, my_envp);
 	if (!left)
+	{
+		free_token_list(right_tokens);
 		return (NULL);
+	}
 
 	// Step 3: Create pipe node and recursively handle right
-	pipe_node = create_pipe_node(left, pipe_token, my_envp);
+	pipe_node = create_pipe_node(left, right_tokens, my_envp);
 	return (pipe_node);
 }
 

@@ -99,6 +99,7 @@ t_token	*tokenize_word(char **input, int *exit_status)
 {
 	char	*buffer;
 	t_token	*token;
+	char	*dup_value;
 
 	buffer = malloc(1024);
 	if (!buffer)
@@ -109,8 +110,13 @@ t_token	*tokenize_word(char **input, int *exit_status)
 		free(buffer);
 		return (NULL); // Or create an empty token, depending on your needs
 	}
-	token = create_token(TOKEN_WORD, ft_strdup(buffer));
+	dup_value = ft_strdup(buffer);
 	free(buffer);
+	if (!dup_value)
+		return (NULL); // prevent leak if strdup fails
+	token = create_token(TOKEN_WORD, dup_value);
+	if (!token)
+		free(dup_value);
 	return (token);
 }
 
@@ -134,6 +140,12 @@ t_token	*tokenize(char *input, int *exit_status)
 			new_token = tokenize_word(&input, exit_status);
 		if (!new_token)
 			continue ;
+		//💥 NEW check: if new_token has empty value, free it and skip
+		if (new_token->value == NULL || new_token->value[0] == '\0')
+		{
+			free(new_token);
+			continue;
+		}
 		if (!head)
 			head = new_token;
 		else

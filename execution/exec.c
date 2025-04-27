@@ -179,6 +179,13 @@ void apply_redirections(t_data *data, int *exit_status)
 		apply_redirections(data->right, exit_status);
 }
 
+void	clean_exit_child(t_data *branch, int ret)
+{
+	free_exec(branch);
+	rl_clear_history();
+	exit(ret);
+}
+
 int	pipes(t_data *data, int *exit_status)
 {
 	int	fd[2];
@@ -211,14 +218,10 @@ int	pipes(t_data *data, int *exit_status)
 		// Redirect stdout to pipe only if no output redirection
 		if (!has_output_redirection(data->left))
 			dup2(fd[1], STDOUT_FILENO);
-		else
-			close(fd[1]); // prevent pipe from receiving redirected output
-
-		close(fd[0]); // always close read end
+		close_fd(fd); // always close read end
 
 		// ✅ redirections in child
-		
-		exit(execute(data->left, exit_status));
+		clean_exit_child(data->left, execute(data->left, exit_status));
 	}
 	// RIGHT child
 	pid2 = fork();
@@ -231,18 +234,12 @@ int	pipes(t_data *data, int *exit_status)
 		signal(SIGPIPE, SIG_IGN); // ✅ avoid broken pipe signals
 
 		if (data->right->type == REDIRECTION && check_all_files(data->right) == 0)
-		apply_redirections(data->right, exit_status);
+			apply_redirections(data->right, exit_status);
 		// Redirect stdin to pipe only if no input redirection
 		if (!has_input_redirection(data->right))
 			dup2(fd[0], STDIN_FILENO);
-		else
-			close(fd[0]); // prevent reading from pipe if already redirected
-
-		close(fd[1]); // always close write end
-
-		// ✅ redirections in child
-
-		exit(execute(data->right, exit_status));
+		close_fd(fd); // always close write end
+		clean_exit_child(data->right, execute(data->right, exit_status));
 	}
 	close_fd(fd);
 	if (pid1 != -1)

@@ -45,7 +45,7 @@ int	ft_cd(t_data *data)
 	{
 		if (data->args[2])
 		{
-			fprintf(stderr, "cd: too many arguments");
+			fprintf(stderr, "cd: too many arguments\n");
 			return (1);
 		}
 		path = data->args[1];

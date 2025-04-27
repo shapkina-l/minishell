@@ -171,5 +171,7 @@ int		builtin(t_data *data, int *exit_status);
 int		handle_heredoc(t_data *data, int *exit_status);
 int		redirect_heredoc(t_data *data, int *exit_status);
 void	cleanup_heredoc_files(t_data *root);
+void	free_envp(char **envp);
+void	free_token_list(t_token *head);
 
 #endif
