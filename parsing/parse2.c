@@ -107,5 +107,6 @@ t_data	*parse_input(char *input, int *exit_status, char **my_envp)
 	token = token_list;
 	root = parse_pipe(token, my_envp);
 	free_token_list(token_list);
+	token_list = NULL;
 	return (root);
 }

@@ -143,6 +143,7 @@ t_token	*tokenize(char *input, int *exit_status)
 		//💥 NEW check: if new_token has empty value, free it and skip
 		if (new_token->value == NULL || new_token->value[0] == '\0')
 		{
+			free(new_token->value);
 			free(new_token);
 			continue;
 		}
