@@ -76,6 +76,7 @@ t_data	*parse_pipe(t_token *token, char **my_envp)
 
 	// Step 3: Create pipe node and recursively handle right
 	pipe_node = create_pipe_node(left, right_tokens, my_envp);
+	free_token_list(right_tokens); // 🛠️ fix leak of right tokens
 	return (pipe_node);
 }
 

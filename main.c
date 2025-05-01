@@ -121,5 +121,6 @@ int	main(int argc, char **argv, char *envp[])
 		free_exec(root);
 	}
 	free_envp(my_envp);
+	rl_clear_history();
 	return (last_exit_status);
 }

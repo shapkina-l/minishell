@@ -220,8 +220,11 @@ int	pipes(t_data *data, int *exit_status)
 			dup2(fd[1], STDOUT_FILENO);
 		close_fd(fd); // always close read end
 
-		// ✅ redirections in child
-		clean_exit_child(data->left, execute(data->left, exit_status));
+		// ✅ Execute minimal logic only in child
+		if (data->left->type == BUILTIN)
+			exit(builtin(data->left, exit_status));
+		else
+			exit(exec(data->left));
 	}
 	// RIGHT child
 	pid2 = fork();
@@ -239,7 +242,10 @@ int	pipes(t_data *data, int *exit_status)
 		if (!has_input_redirection(data->right))
 			dup2(fd[0], STDIN_FILENO);
 		close_fd(fd); // always close write end
-		clean_exit_child(data->right, execute(data->right, exit_status));
+		if (data->right->type == BUILTIN)
+			exit(builtin(data->right, exit_status));
+		else
+			exit(exec(data->right));
 	}
 	close_fd(fd);
 	if (pid1 != -1)
