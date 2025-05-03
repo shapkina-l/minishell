@@ -6,7 +6,7 @@
 /*   By: lshapkin <lshapkin@student.42berlin.de>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/10 21:22:24 by lshapkin          #+#    #+#             */
-/*   Updated: 2025/04/10 21:23:19 by lshapkin         ###   ########.fr       */
+/*   Updated: 2025/05/03 23:54:06 by lshapkin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -78,26 +78,19 @@ void	fill_args_array(t_token *token, t_data *node, int count_args)
 	i = 0;
 	while (tmp && tmp->type != TOKEN_PIPE && i < count_args)
 	{
-		if (tmp->type == TOKEN_WORD)
+		if (tmp->type == TOKEN_WORD && tmp->value[0])
 		{
-			if (tmp->value[0] == '\0') // skip empty tokens like from $EMPTY
+			node->args[i++] = ft_strdup(tmp->value);
+			if (!node->args[i - 1])
 			{
-				tmp = tmp->next;
-				continue;
-			}
-			node->args[i] = ft_strdup(tmp->value);
-			if (!node->args[i])
-			{
-				free_args_array(node, i);
+				free_args_array(node, i - 1);
 				return ;
 			}
-			i++;
 		}
-		else if (tmp->type >= TOKEN_REDIRECT_IN && tmp->type <= TOKEN_APPEND)
+		else if (tmp->type >= TOKEN_REDIRECT_IN && tmp->type <= TOKEN_APPEND
+			&& tmp->next && tmp->next->type == TOKEN_WORD)
 		{
-		// skip the next token if it's the redirection target (a WORD)
-			if (tmp->next && tmp->next->type == TOKEN_WORD)
-				tmp = tmp->next;
+			tmp = tmp->next;
 		}
 		tmp = tmp->next;
 	}
@@ -117,7 +110,7 @@ void	handle_all_args(t_token *token, t_data *node)
 		return ;
 	}
 	fill_args_array(token, node, count_args);
-	if (!node->args[0]) // All args got skipped (e.g., $EMPTY became "")
+	if (!node->args[0])
 	{
 		free(node->args);
 		node->args = NULL;

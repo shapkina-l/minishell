@@ -6,7 +6,7 @@
 /*   By: lshapkin <lshapkin@student.42berlin.de>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/18 15:17:19 by lshapkin          #+#    #+#             */
-/*   Updated: 2025/04/23 19:57:33 by lshapkin         ###   ########.fr       */
+/*   Updated: 2025/05/04 00:53:47 by lshapkin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,45 +52,47 @@ t_token	*tokenize_operator(char **input)
 	return (NULL);
 }
 
+int	process_word_char(char *buffer, char **input, int *exit_status, char *quote_char, int buf_index)
+{
+	char	*status_str;
+
+	if (**input == '$' && *(*input + 1) == '?' && *quote_char != '\'')
+	{
+		(*input) += 2;
+		status_str = ft_itoa(*exit_status);
+		ft_strlcpy(buffer + buf_index, status_str, 1024 - buf_index);
+		buf_index += ft_strlen(status_str);
+		return (free(status_str), buf_index);
+	}
+	if ((**input == '\'' || **input == '"') && *quote_char == 0)
+	{
+		*quote_char = **input;
+		return ((*input)++, buf_index);
+	}
+	if (**input == *quote_char)
+	{
+		*quote_char = 0;
+		return ((*input)++, buf_index);
+	}
+	if (**input == '$' && *quote_char != '\'')
+		return (handle_env_var(input, buffer, buf_index));
+	buffer[buf_index++] = **input;
+	return ((*input)++, buf_index);
+}
+
 void	tokenize_word_loop(char *buffer, char **input, int *exit_status)
 {
 	int		buf_index;
-	char	*status_str;
-	char	quote_char = 0;
+	char	quote_char;
 
 	buf_index = 0;
+	quote_char = 0;
 	while (**input)
 	{
-		if (!quote_char && ft_strchr(" \t|<>", **input)) // there can be an operator in the middle of a word, then break and the loop will handle the operator
+		if (!quote_char && ft_strchr(" \t|<>", **input))
 			break ;
-		if (**input == '$' && *(*input + 1) == '?' && quote_char != '\'')
-		{
-			(*input) += 2;
-			status_str = ft_itoa(*exit_status);
-			ft_strlcpy(&buffer[buf_index], status_str, 1024 - buf_index);
-			buf_index += ft_strlen(status_str);
-			free(status_str);
-			continue ;
-		}
-		if ((**input == '\'' || **input == '"') && quote_char == 0)
-		{
-			quote_char = **input;
-			(*input)++;
-			continue ;
-		}
-		if (**input == quote_char)
-		{
-			quote_char = 0;
-			(*input)++;
-			continue ;
-		}
-		if (**input == '$' && quote_char != '\'')
-		{
-			buf_index = handle_env_var(input, buffer, buf_index);
-			continue ;
-		}
-		buffer[buf_index++] = **input;
-		(*input)++;
+		buf_index = process_word_char(buffer, input,
+				exit_status, &quote_char, buf_index);
 	}
 	buffer[buf_index] = '\0';
 }
@@ -105,53 +107,17 @@ t_token	*tokenize_word(char **input, int *exit_status)
 	if (!buffer)
 		return (NULL);
 	tokenize_word_loop(buffer, input, exit_status);
-	if (buffer[0] == '\0') // Handle case where buffer is empty (e.g., standalone "")
+	if (buffer[0] == '\0')
 	{
 		free(buffer);
-		return (NULL); // Or create an empty token, depending on your needs
+		return (NULL);
 	}
 	dup_value = ft_strdup(buffer);
 	free(buffer);
 	if (!dup_value)
-		return (NULL); // prevent leak if strdup fails
+		return (NULL);
 	token = create_token(TOKEN_WORD, dup_value);
 	if (!token)
 		free(dup_value);
 	return (token);
-}
-
-t_token	*tokenize(char *input, int *exit_status)
-{
-	t_token	*head;
-	t_token	*current;
-	t_token	*new_token;
-
-	head = NULL;
-	current = NULL;
-	while (*input)
-	{
-		skip_whitespaces(&input);
-		if (!*input)
-			break ;
-		new_token = NULL;
-		if (ft_strchr("|<>", *input))
-			new_token = tokenize_operator(&input);
-		else
-			new_token = tokenize_word(&input, exit_status);
-		if (!new_token)
-			continue ;
-		//💥 NEW check: if new_token has empty value, free it and skip
-		if (new_token->value == NULL || new_token->value[0] == '\0')
-		{
-			free(new_token->value);
-			free(new_token);
-			continue;
-		}
-		if (!head)
-			head = new_token;
-		else
-			current->next = new_token;
-		current = new_token;
-	}
-	return (head);
 }

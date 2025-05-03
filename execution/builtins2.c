@@ -6,7 +6,7 @@
 /*   By: lshapkin <lshapkin@student.42berlin.de>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/12 19:01:51 by lshapkin          #+#    #+#             */
-/*   Updated: 2025/04/10 21:28:04 by lshapkin         ###   ########.fr       */
+/*   Updated: 2025/05/03 15:24:54 by lshapkin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -87,13 +87,41 @@ int	ft_export_var_create(char *new_var, t_data *data)
 	return (free(data->my_envp), data->my_envp = new_envp, 0);
 }
 
+int	ft_export_loop(t_data *data, int i, int var_exists)
+{
+	char	*var_name;
+	char	*equals_pos;
+
+	while (data->args[i])
+	{
+		var_name = ft_strdup(data->args[i]);
+		if (!var_name)
+			return (1);
+		equals_pos = ft_strchr(var_name, '=');
+		if (equals_pos)
+			*equals_pos = '\0';
+		if (!is_valid_identifier(var_name))
+			return (fprintf(stderr, "export: `%s': not a valid identifier\n",
+					data->args[i]), free(var_name), 1);
+		free(var_name);
+		if (ft_strchr(data->args[i], '='))
+		{
+			var_exists = ft_export_var_exists(data->args[i], data->my_envp);
+			if (var_exists < 0 || (var_exists == 0
+					&& ft_export_var_create(data->args[i], data) < 0))
+				return (1);
+		}
+		i++;
+	}
+	return (0);
+}
+
 int	ft_export(t_data *data)
 {
 	int		i;
 	int		var_exists;
-	char	*var_name;
-	char	*equals_pos;
 
+	var_exists = 0;
 	if (!data->my_envp)
 		return (1);
 	if (!data->args[1])
@@ -104,64 +132,5 @@ int	ft_export(t_data *data)
 		return (0);
 	}
 	i = 1;
-	while (data->args[i])
-	{
-		var_name = ft_strdup(data->args[i]);
-		if (!var_name)
-			return (1);
-		equals_pos = ft_strchr(var_name, '=');
-		if (equals_pos)
-			*equals_pos = '\0';
-		if (!is_valid_identifier(var_name))
-		{
-			fprintf(stderr, "export: `%s': not a valid identifier\n", data->args[i]);
-			free(var_name);
-			return (1);
-		}
-		free(var_name);
-		if (ft_strchr(data->args[i], '='))
-		{
-			var_exists = ft_export_var_exists(data->args[i], data->my_envp);
-			if (var_exists == -1)
-				return (1);
-			if (var_exists == 0)
-			{
-				if (ft_export_var_create(data->args[i], data) == -1)
-					return (1);
-			}
-		}
-		i++;
-	}
-	return (0);
-}
-
-int	ft_unset(t_data *data)
-{
-	int	i;
-	int	j;
-
-	if (!data->args[1])
-		return (0);
-	i = 1;
-	while (data->args[i])
-	{
-		j = 0;
-		while ((data->my_envp)[j])
-		{
-			if (ft_strncmp((data->my_envp)[j], data->args[i], ft_strlen(data->args[i])) == 0 
-				&& (data->my_envp)[j][strlen(data->args[i])] == '=')
-			{
-				free((data->my_envp)[j]);
-				while ((data->my_envp)[j])
-				{
-					(data->my_envp)[j] = (data->my_envp)[j + 1];
-					j++;
-				}
-				break ;
-			}
-			j++;
-		}
-		i++;
-	}
-	return (0);
+	return (ft_export_loop(data, i, var_exists));
 }

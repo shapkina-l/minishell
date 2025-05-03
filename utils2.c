@@ -6,7 +6,7 @@
 /*   By: lshapkin <lshapkin@student.42berlin.de>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/02 21:35:16 by lshapkin          #+#    #+#             */
-/*   Updated: 2025/04/06 20:50:13 by lshapkin         ###   ########.fr       */
+/*   Updated: 2025/05/04 00:55:03 by lshapkin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,16 +43,6 @@ int	handle_env_var(char **input, char *buffer, int buf_index)
 		buffer[buf_index++] = *value++;
 	return (buf_index);
 }
-
-// void	my_shell_handler(int signum)
-// {
-// 	(void)signum;           //int signum as argument necessary because of the 
-//                          //arguments that signal expect
-// 	write(1, "\n", 1);      // Move to a new line
-// 	rl_replace_line("", 0); // Clear the current input line
-// 	rl_on_new_line();       // Prepare a new prompt
-// 	rl_redisplay();         // Redisplay the prompt
-// }
 
 void	my_shell_handler(int signum)
 {

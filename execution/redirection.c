@@ -6,7 +6,7 @@
 /*   By: lshapkin <lshapkin@student.42berlin.de>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/16 12:37:47 by lshapkin          #+#    #+#             */
-/*   Updated: 2025/04/23 20:17:57 by lshapkin         ###   ########.fr       */
+/*   Updated: 2025/05/03 23:10:28 by lshapkin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,7 +64,6 @@ void	reset_redirections(int original_stdin, int original_stdout)
 		dup2(original_stdin, STDIN_FILENO);
 		close(original_stdin);
 	}
-
 	if (original_stdout >= 0)
 	{
 		dup2(original_stdout, STDOUT_FILENO);

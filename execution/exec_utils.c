@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   exec_utils.c                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lshapkin <lshapkin@student.42.fr>          +#+  +:+       +#+        */
+/*   By: lshapkin <lshapkin@student.42berlin.de>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/15 17:24:02 by lshapkin          #+#    #+#             */
-/*   Updated: 2025/04/15 17:28:03 by lshapkin         ###   ########.fr       */
+/*   Updated: 2025/05/03 23:11:00 by lshapkin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,7 +50,6 @@ void	exec_file_check(t_data *data)
 	}
 }
 
-
 void	close_fd(int fd[2])
 {
 	if (fd[0] != -1)
@@ -59,65 +58,29 @@ void	close_fd(int fd[2])
 		close(fd[1]);
 }
 
-t_data *find_last_redirection(t_data *data, int type)
+t_data	*find_last_redirection(t_data *data, int type)
 {
+	t_data	*left;
+	t_data	*right;
+
 	if (!data)
 		return (NULL);
-
-	t_data *left = find_last_redirection(data->left, type);
-	t_data *right = find_last_redirection(data->right, type);
-
+	left = find_last_redirection(data->left, type);
+	right = find_last_redirection(data->right, type);
 	if (right)
 		return (right);
 	if (left)
 		return (left);
 	if (data->type == REDIRECTION && data->redirection_type == type)
 		return (data);
-	return NULL;
+	return (NULL);
 }
 
-t_data *get_command_node(t_data *data)
+t_data	*get_command_node(t_data *data)
 {
 	if (!data)
-		return NULL;
+		return (NULL);
 	if (data->type != REDIRECTION)
 		return (data);
-	return (get_command_node(data->left)); // left is always the actual command
-}
-
-int	special_case_export(t_data *data, int fd[2], int *exit_status)
-{
-	int	ret;
-	int	pid2;
-	int	status2;
-
-	if (data->left->type == BUILTIN
-		&& (data->left->builtin_type == BUILTIN_EXPORT
-			|| data->left->builtin_type == BUILTIN_UNSET))
-	{
-		// Execute the builtin in the current process to update the environment
-		ret = builtin(data->left, exit_status);
-		// Now proceed with the pipe for the right side
-		if (pipe(fd) == -1)
-			perror("pipe");
-		pid2 = fork();
-		if (pid2 < 0)
-			perror("fork");
-		if (pid2 == 0)
-		{
-			// We only need to get input from pipe if there was output from left
-			close(fd[1]);
-			dup2(fd[0], STDIN_FILENO);
-			close(fd[0]);
-			ret = execute(data->right, exit_status);
-			exit(ret);
-		}
-		close(fd[0]);
-		close(fd[1]);
-		waitpid(pid2, &status2, 0);
-		if (WIFEXITED(status2))
-			return (WEXITSTATUS(status2));
-		return (1);
-	}
-	return (-1);
+	return (get_command_node(data->left));
 }

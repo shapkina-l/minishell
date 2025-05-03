@@ -6,7 +6,7 @@
 /*   By: lshapkin <lshapkin@student.42berlin.de>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/05 16:30:03 by lshapkin          #+#    #+#             */
-/*   Updated: 2025/04/23 20:17:01 by lshapkin         ###   ########.fr       */
+/*   Updated: 2025/05/04 00:12:18 by lshapkin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -131,6 +131,16 @@ typedef struct s_redirect_set
 	char	*append_file;
 }	t_redirect_set;
 
+typedef struct s_pipes_utils
+{
+	int	fd[2];
+	int	pid1;
+	int	pid2;
+	int	status1;
+	int	status2;
+	int	check;
+}	t_pipes_utils;
+
 
 int		execute(t_data *data, int *exit_status);
 void	free_exec(t_data *data);
@@ -173,5 +183,14 @@ int		redirect_heredoc(t_data *data, int *exit_status);
 void	cleanup_heredoc_files(t_data *root);
 void	free_envp(char **envp);
 void	free_token_list(t_token *head);
+void	exec_child_access_check(t_data *data);
+int		pipes(t_data *data, int *exit_status);
+int		check_all_files(t_data *data);
+void	apply_redirections(t_data *data, int *exit_status);
+int		has_output_redirection(t_data *data);
+int		has_input_redirection(t_data *data);
+int		exec(t_data *data);
+t_token	*tokenize_operator(char **input);
+t_token	*tokenize_word(char **input, int *exit_status);
 
 #endif

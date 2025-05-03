@@ -6,7 +6,7 @@
 /*   By: lshapkin <lshapkin@student.42berlin.de>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/03 01:00:54 by lshapkin          #+#    #+#             */
-/*   Updated: 2025/04/10 00:21:51 by lshapkin         ###   ########.fr       */
+/*   Updated: 2025/05/04 00:00:40 by lshapkin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,6 +31,17 @@ t_data	*create_pipe_node(t_data *left, t_token *right_token, char **my_envp)
 	return (pipe_node);
 }
 
+t_data	*parse_pipe_left(t_data *left, t_token *token, char **my_envp)
+{
+	left = parse_command(token, my_envp);
+	if (!left)
+		return (NULL);
+	left = parse_redirection(token, left, my_envp);
+	if (!left)
+		return (NULL);
+	return (left);
+}
+
 t_data	*parse_pipe(t_token *token, char **my_envp)
 {
 	t_data	*left;
@@ -38,45 +49,24 @@ t_data	*parse_pipe(t_token *token, char **my_envp)
 	t_token	*tmp;
 	t_token	*right_tokens;
 
+	left = NULL;
 	if (!token)
 		return (NULL);
-	// Step 1: Find the first pipe token
 	tmp = token;
 	while (tmp && tmp->type != TOKEN_PIPE)
 		tmp = tmp->next;
-
 	if (!tmp || tmp->type != TOKEN_PIPE)
-	{
-		// no pipe, parse full command + redirections
-		left = parse_command(token, my_envp);
-		if (!left)
-			return (NULL);
-		left = parse_redirection(token, left, my_envp);
-		if (!left)
-			return (NULL);
-		return (left);
-	}	
-	right_tokens = tmp->next; // for freeing the tokens after the cut
-
-	tmp->next = NULL; //cut token list for left side
-
-	// Step 2: Parse left side up to the pipe
+		return (parse_pipe_left(left, token, my_envp));
+	right_tokens = tmp->next;
+	tmp->next = NULL;
 	left = parse_command(token, my_envp);
 	if (!left)
-	{
-		free_token_list(right_tokens);
-		return (NULL);
-	}
+		return (free_token_list(right_tokens), NULL);
 	left = parse_redirection(token, left, my_envp);
 	if (!left)
-	{
-		free_token_list(right_tokens);
-		return (NULL);
-	}
-
-	// Step 3: Create pipe node and recursively handle right
+		return (free_token_list(right_tokens), NULL);
 	pipe_node = create_pipe_node(left, right_tokens, my_envp);
-	free_token_list(right_tokens); // 🛠️ fix leak of right tokens
+	free_token_list(right_tokens);
 	return (pipe_node);
 }
 
