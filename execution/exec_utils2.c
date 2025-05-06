@@ -6,46 +6,11 @@
 /*   By: lshapkin <lshapkin@student.42berlin.de>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/03 14:39:22 by lshapkin          #+#    #+#             */
-/*   Updated: 2025/05/03 20:45:52 by lshapkin         ###   ########.fr       */
+/*   Updated: 2025/05/06 17:47:31 by lshapkin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../minishell.h"
-
-int	special_case_exp_child(t_data *data, int fd[2], int *exit_status, int ret)
-{
-	dup2(fd[0], STDIN_FILENO);
-	close_fd(fd);
-	ret = execute(data->right, exit_status);
-	exit(ret);
-}
-
-int	special_case_export(t_data *data, int fd[2], int *exit_status)
-{
-	int	ret;
-	int	pid2;
-	int	status2;
-
-	if (data->left->type == BUILTIN
-		&& (data->left->builtin_type == BUILTIN_EXPORT
-			|| data->left->builtin_type == BUILTIN_UNSET))
-	{
-		ret = builtin(data->left, exit_status);
-		if (pipe(fd) == -1)
-			perror("pipe");
-		pid2 = fork();
-		if (pid2 < 0)
-			perror("fork");
-		if (pid2 == 0)
-			special_case_exp_child(data, fd, exit_status, ret);
-		close_fd(fd);
-		waitpid(pid2, &status2, 0);
-		if (WIFEXITED(status2))
-			return (WEXITSTATUS(status2));
-		return (1);
-	}
-	return (-1);
-}
 
 long	ft_atol(const char *str)
 {

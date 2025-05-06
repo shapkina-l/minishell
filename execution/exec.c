@@ -6,7 +6,7 @@
 /*   By: lshapkin <lshapkin@student.42berlin.de>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/05 16:43:30 by lshapkin          #+#    #+#             */
-/*   Updated: 2025/05/03 23:19:42 by lshapkin         ###   ########.fr       */
+/*   Updated: 2025/05/06 18:40:29 by lshapkin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -93,7 +93,7 @@ int	execute_redirection(t_data *data, int *ret, int *exit_status)
 		return (1);
 	if (check_all_files(data))
 		return (perror(data->redirection_file), 1);
-	apply_redirections(data, exit_status);
+	apply_redirections(data);
 	if (command_node->type == EXECUTION || command_node->type == BUILTIN)
 		*ret = execute(command_node, exit_status);
 	else

@@ -6,7 +6,7 @@
 /*   By: lshapkin <lshapkin@student.42berlin.de>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/16 15:16:26 by lshapkin          #+#    #+#             */
-/*   Updated: 2025/04/23 20:15:52 by lshapkin         ###   ########.fr       */
+/*   Updated: 2025/05/06 19:44:32 by lshapkin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,7 +28,6 @@ char	*ft_readline(void)
 	return (input);
 }
 
-//copy of the environment to avoid undefined behaviour of non allocated envp
 char	**dup_envp(char **envp)
 {
 	int		i;
@@ -67,22 +66,22 @@ void	free_exec(t_data *data)
 
 	if (!data)
 		return ;
-	if (data->args) //free the args array
+	if (data->args)
 	{
 		i = 0;
 		while (data->args[i])
 			free(data->args[i++]);
 		free(data->args);
 	}
-	if (data->full_cmd) //free command string
+	if (data->full_cmd)
 		free(data->full_cmd);
-	if (data->redirection_file) //free redirection file name
+	if (data->redirection_file)
 		free(data->redirection_file);
-	if (data->left) // recursively free left and right branches
+	if (data->left)
 		free_exec(data->left);
 	if (data->right)
 		free_exec(data->right);
-	free(data); //free the node itself
+	free(data);
 }
 
 int	main(int argc, char **argv, char *envp[])
@@ -95,8 +94,8 @@ int	main(int argc, char **argv, char *envp[])
 	(void)argc;
 	(void)argv;
 	last_exit_status = 0;
-	signal(SIGINT, my_shell_handler); // dont kill minishell (parent) with ctrl + C
-	signal(SIGQUIT, SIG_IGN); // ignore Ctrl + \ in minishell (parent)
+	signal(SIGINT, my_shell_handler);
+	signal(SIGQUIT, SIG_IGN);
 	my_envp = dup_envp(envp);
 	if (!my_envp)
 	{
@@ -113,6 +112,13 @@ int	main(int argc, char **argv, char *envp[])
 		{
 			free(input);
 			continue ; // it skips execute and free if root fails
+		}
+		if (process_all_heredocs(root, &last_exit_status))
+		{
+ 		    // user hit Ctrl-C in a heredoc; cleanup and skip execution
+    		cleanup_heredoc_files(root);
+    		free_exec(root);
+    		continue;
 		}
 		last_exit_status = execute(root, &last_exit_status);
 		cleanup_heredoc_files(root);

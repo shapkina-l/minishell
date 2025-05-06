@@ -6,11 +6,23 @@
 /*   By: lshapkin <lshapkin@student.42berlin.de>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/27 21:48:30 by lshapkin          #+#    #+#             */
-/*   Updated: 2025/04/23 20:14:11 by lshapkin         ###   ########.fr       */
+/*   Updated: 2025/05/04 21:35:53 by lshapkin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
+
+char	*make_cmd_check(char *argv, struct stat file_stat)
+{
+	if (access(argv, F_OK) == 0)
+	{
+		if (stat(argv, &file_stat) == 0 && S_ISDIR(file_stat.st_mode))
+			return (NULL);
+		else if (access(argv, X_OK) == 0)
+			return (ft_strdup(argv));
+	}
+	return (NULL);
+}
 
 char	*make_cmd(char **cmd_path, char *argv)
 {
@@ -25,14 +37,7 @@ char	*make_cmd(char **cmd_path, char *argv)
 	if (argv[0] == '/' || (argv[0] == '.'
 			&& (argv[1] == '/' || (argv[1] == '.' && argv[2] == '/'))))
 	{
-		if (access(argv, F_OK) == 0)
-		{
-			if (stat(argv, &file_stat) == 0 && S_ISDIR(file_stat.st_mode))
-				return (NULL);
-			else if (access(argv, X_OK) == 0)
-				return (ft_strdup(argv));
-		}
-		return (NULL);
+		return (make_cmd_check(argv, file_stat));
 	}
 	while (*cmd_path)
 	{
@@ -96,29 +101,4 @@ int	builtin_check(char *cmd)
 		return (BUILTIN_EXIT);
 	else
 		return (-1);
-}
-
-void	*ft_realloc(void *ptr, size_t old_size, size_t new_size)
-{
-	void	*new_ptr;
-	size_t	copy_size;
-
-	if (new_size == 0)
-	{
-		free(ptr);
-		return (NULL);
-	}
-	new_ptr = malloc(new_size);
-	if (!new_ptr)
-		return (NULL);
-	if (ptr)
-	{
-		if (old_size < new_size)
-			copy_size = old_size;
-		else
-			copy_size = new_size;
-		ft_memcpy(new_ptr, ptr, copy_size);
-		free(ptr);
-	}
-	return (new_ptr);
 }

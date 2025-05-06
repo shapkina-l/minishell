@@ -6,7 +6,7 @@
 /*   By: lshapkin <lshapkin@student.42berlin.de>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/03 20:54:07 by lshapkin          #+#    #+#             */
-/*   Updated: 2025/05/03 20:54:57 by lshapkin         ###   ########.fr       */
+/*   Updated: 2025/05/06 18:39:43 by lshapkin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,7 +40,7 @@ int	check_all_files(t_data *data)
 	return (0);
 }
 
-void	apply_redirection(t_data *redir, int *exit_status)
+void	apply_redirection(t_data *redir)
 {
 	if (redir->redirection_type == REDIRECT_INPUT)
 		redirect_input(redir);
@@ -49,17 +49,17 @@ void	apply_redirection(t_data *redir, int *exit_status)
 	else if (redir->redirection_type == REDIRECT_APPEND)
 		redirect_append(redir);
 	else if (redir->redirection_type == REDIRECT_HEREDOC)
-		redirect_heredoc(redir, exit_status);
+		redirect_heredoc(redir);
 }
 
-void	apply_redirections(t_data *data, int *exit_status)
+void	apply_redirections(t_data *data)
 {
 	if (!data)
 		return ;
 	if (data->left)
-		apply_redirections(data->left, exit_status);
+		apply_redirections(data->left);
 	if (data->type == REDIRECTION)
-		apply_redirection(data, exit_status);
+		apply_redirection(data);
 	if (data->right)
-		apply_redirections(data->right, exit_status);
+		apply_redirections(data->right);
 }

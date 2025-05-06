@@ -6,7 +6,7 @@
 /*   By: lshapkin <lshapkin@student.42berlin.de>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/05 17:17:56 by apaz-mar          #+#    #+#             */
-/*   Updated: 2025/04/23 20:13:42 by lshapkin         ###   ########.fr       */
+/*   Updated: 2025/05/06 18:32:07 by lshapkin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -75,7 +75,6 @@ void	set_redirecton_type(t_token *tmp, t_data *redir_node)
 	else if (tmp->type == TOKEN_HEREDOC)
 		redir_node->redirection_type = REDIRECT_HEREDOC;
 	redir_node->redirection_file = ft_strdup(tmp->next->value);
-	//to do
 	redir_node->is_delimiter_quoted = 0;
 }
 

@@ -6,7 +6,7 @@
 /*   By: lshapkin <lshapkin@student.42berlin.de>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/05 16:30:03 by lshapkin          #+#    #+#             */
-/*   Updated: 2025/05/04 00:12:18 by lshapkin         ###   ########.fr       */
+/*   Updated: 2025/05/06 19:46:19 by lshapkin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,8 +27,8 @@
 # include <sys/stat.h>
 # include <errno.h>
 
-extern int	g_in_prompt; // global flag to track when in prompt (parent shell 
-						// waiting for input) vs when executing a command
+extern int	g_in_prompt;
+
 typedef enum e_exec_type
 {
 	EXECUTION,
@@ -36,18 +36,6 @@ typedef enum e_exec_type
 	REDIRECTION,
 	BUILTIN
 }	t_exec_type;
-
-// TOKEN_WORD,         // Regular command/argument
-// TOKEN_PIPE,         // '|'
-// TOKEN_REDIRECT_IN,  // '<'
-// TOKEN_REDIRECT_OUT, // '>'
-// TOKEN_HEREDOC,      // '<<'
-// TOKEN_APPEND,       // '>>'
-// TOKEN_AND,         // '&&' - bonus
-// TOKEN_OR,          // '||' - bonus
-// TOKEN_OPEN_PAREN,  // '(' - bonus
-// TOKEN_CLOSE_PAREN, // ')' - bonus
-// TOKEN_EOF          // End of input
 
 typedef enum e_token_type
 {
@@ -90,22 +78,6 @@ typedef enum e_redirection_type
 	REDIRECT_APPEND
 }	t_redirection_type;
 
-//redirection types
-// 1 - < - should redirect input.
-// 2 - > - should redirect output.
-// 3 - << - should be given a delimiter, then read the input until a line 
-// containing the
-//delimiter is seen. However, it doesn’t have to update the history!
-// 4 - >> - should redirect output in append mode.
-
-//delete?
-# define ANSI_COLOR_YELLOW  "\x1b[33m"
-# define ANSI_COLOR_GREEN   "\x1b[32m"
-# define ANSI_COLOR_CYAN    "\x1b[36m"
-# define ANSI_COLOR_RED     "\x1b[31m"
-# define ANSI_COLOR_PINK    "\x1b[35m"
-# define ANSI_COLOR_RESET   "\x1b[0m"
-
 typedef struct s_data
 {
 	int				type;
@@ -141,7 +113,6 @@ typedef struct s_pipes_utils
 	int	check;
 }	t_pipes_utils;
 
-
 int		execute(t_data *data, int *exit_status);
 void	free_exec(t_data *data);
 int		ft_echo(t_data *data);
@@ -163,7 +134,6 @@ int		builtin_check(char *cmd);
 void	*ft_realloc(void *ptr, size_t old_size, size_t new_size);
 void	my_shell_handler(int signum);
 void	reset_redirections(int original_stdin, int original_stdout);
-int		redirection(t_data *data, int *exit_status);
 void	skip_whitespaces(char **input);
 int		handle_env_var(char **input, char *buffer, int buf_index);
 t_data	*parse_pipe(t_token *token, char **my_envp);
@@ -176,21 +146,32 @@ void	exec_file_check(t_data *data);
 void	close_fd(int fd[2]);
 t_data	*find_last_redirection(t_data *data, int type);
 t_data	*get_command_node(t_data *data);
-int		special_case_export(t_data *data, int fd[2], int *exit_status);
 int		builtin(t_data *data, int *exit_status);
 int		handle_heredoc(t_data *data, int *exit_status);
-int		redirect_heredoc(t_data *data, int *exit_status);
+int		redirect_heredoc(t_data *data);
 void	cleanup_heredoc_files(t_data *root);
 void	free_envp(char **envp);
 void	free_token_list(t_token *head);
 void	exec_child_access_check(t_data *data);
 int		pipes(t_data *data, int *exit_status);
 int		check_all_files(t_data *data);
-void	apply_redirections(t_data *data, int *exit_status);
+void	apply_redirections(t_data *data);
 int		has_output_redirection(t_data *data);
 int		has_input_redirection(t_data *data);
 int		exec(t_data *data);
 t_token	*tokenize_operator(char **input);
 t_token	*tokenize_word(char **input, int *exit_status);
+int		process_all_heredocs(t_data *node, int *exit_status);
+void	handle_heredoc_signal(int sig);
+void	process_heredoc_lines(int fd, const char *delimiter,
+			int should_expand, int *exit_status);
+int		prepare_heredoc(t_data *data, char **temp_file,
+			char **delimiter, int *should_expand);
+int		handle_fork_error(char *temp_file, char *delimiter);
+int		run_heredoc_child(const char *temp_file, const char *delimiter,
+			int should_expand, int *exit_status);
+int		is_quoted_delimiter(char *delimiter);
+char	*create_heredoc_tempfile(void);
+char	*expand_vars_in_line(const char *line, int *exit_status);
 
 #endif
