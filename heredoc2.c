@@ -6,19 +6,18 @@
 /*   By: lshapkin <lshapkin@student.42berlin.de>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/06 18:43:37 by lshapkin          #+#    #+#             */
-/*   Updated: 2025/05/06 19:30:43 by lshapkin         ###   ########.fr       */
+/*   Updated: 2025/05/07 23:24:12 by lshapkin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
 int	prepare_heredoc(t_data *data, char **temp_file,
-	char **delimiter, int *should_expand)
+	char **delimiter)
 {
 	*temp_file = create_heredoc_tempfile();
 	if (!*temp_file)
 		return (1);
-	*should_expand = !is_quoted_delimiter(data->redirection_file);
 	*delimiter = ft_strdup(data->redirection_file);
 	if (!*delimiter)
 	{
@@ -47,17 +46,16 @@ int	handle_heredoc(t_data *data, int *exit_status)
 {
 	char	*temp_file;
 	char	*delimiter;
-	int		should_expand;
 	pid_t	pid;
 	int		status;
 
-	if (prepare_heredoc(data, &temp_file, &delimiter, &should_expand))
+	if (prepare_heredoc(data, &temp_file, &delimiter))
 		return (1);
 	pid = fork();
 	if (pid < 0)
 		return (handle_fork_error(temp_file, delimiter));
 	if (pid == 0)
-		run_heredoc_child(temp_file, delimiter, should_expand, exit_status);
+		run_heredoc_child(temp_file, delimiter, exit_status);
 	waitpid(pid, &status, 0);
 	free(delimiter);
 	return (finalize_heredoc(status, temp_file, data, exit_status));

@@ -6,27 +6,13 @@
 /*   By: lshapkin <lshapkin@student.42berlin.de>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/16 15:16:26 by lshapkin          #+#    #+#             */
-/*   Updated: 2025/05/06 19:44:32 by lshapkin         ###   ########.fr       */
+/*   Updated: 2025/05/07 23:38:34 by lshapkin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
 int		g_in_prompt = 0; // global variable must be defined in a function to allocate space for it
-
-char	*ft_readline(void)
-{
-	char	*input;
-	char	*prompt;
-
-	g_in_prompt = 1;
-	prompt = "minishell>";
-	input = readline(prompt);
-	g_in_prompt = 0;
-	if (input)
-		add_history(input);
-	return (input);
-}
 
 char	**dup_envp(char **envp)
 {
@@ -84,15 +70,44 @@ void	free_exec(t_data *data)
 	free(data);
 }
 
-int	main(int argc, char **argv, char *envp[])
+void	main_loop(t_data *root, int *last_exit_status, char **my_envp)
 {
 	char	*input;
+
+	while (1)
+	{
+		input = ft_readline();
+		if (!input)
+			break ;
+		root = parse_input(input, last_exit_status, my_envp);
+		if (!root)
+		{
+			free(input);
+			continue ;
+		}
+		if (process_all_heredocs(root, last_exit_status))
+		{
+			cleanup_heredoc_files(root);
+			free_exec(root);
+			continue ;
+		}
+		*last_exit_status = execute(root, last_exit_status);
+		cleanup_heredoc_files(root);
+		my_envp = root->my_envp;
+		free(input);
+		free_exec(root);
+	}
+}
+
+int	main(int argc, char **argv, char *envp[])
+{
 	t_data	*root;
 	char	**my_envp;
 	int		last_exit_status;
 
 	(void)argc;
 	(void)argv;
+	root = NULL;
 	last_exit_status = 0;
 	signal(SIGINT, my_shell_handler);
 	signal(SIGQUIT, SIG_IGN);
@@ -102,30 +117,7 @@ int	main(int argc, char **argv, char *envp[])
 		printf("Failed to initialize environment.\n");
 		return (1);
 	}
-	while (1) //data->end_flag == 0
-	{
-		input = ft_readline();
-		if (!input)
-			break ;
-		root = parse_input(input, &last_exit_status, my_envp);
-		if (!root)
-		{
-			free(input);
-			continue ; // it skips execute and free if root fails
-		}
-		if (process_all_heredocs(root, &last_exit_status))
-		{
- 		    // user hit Ctrl-C in a heredoc; cleanup and skip execution
-    		cleanup_heredoc_files(root);
-    		free_exec(root);
-    		continue;
-		}
-		last_exit_status = execute(root, &last_exit_status);
-		cleanup_heredoc_files(root);
-		my_envp = root->my_envp;
-		free(input);
-		free_exec(root);
-	}
+	main_loop(root, &last_exit_status, my_envp);
 	free_envp(my_envp);
 	rl_clear_history();
 	return (last_exit_status);

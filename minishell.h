@@ -6,7 +6,7 @@
 /*   By: lshapkin <lshapkin@student.42berlin.de>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/05 16:30:03 by lshapkin          #+#    #+#             */
-/*   Updated: 2025/05/06 19:46:19 by lshapkin         ###   ########.fr       */
+/*   Updated: 2025/05/07 23:37:42 by lshapkin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,6 +26,8 @@
 # include <signal.h>
 # include <sys/stat.h>
 # include <errno.h>
+
+# define BUF_SIZE 4096
 
 extern int	g_in_prompt;
 
@@ -113,6 +115,15 @@ typedef struct s_pipes_utils
 	int	check;
 }	t_pipes_utils;
 
+typedef struct s_expand_utils
+{
+	const char	*line;
+	char		*out;
+	int			idx;
+	int			pos;
+	int			exit_status;
+}	t_expand_utils;
+
 int		execute(t_data *data, int *exit_status);
 void	free_exec(t_data *data);
 int		ft_echo(t_data *data);
@@ -163,15 +174,15 @@ t_token	*tokenize_operator(char **input);
 t_token	*tokenize_word(char **input, int *exit_status);
 int		process_all_heredocs(t_data *node, int *exit_status);
 void	handle_heredoc_signal(int sig);
-void	process_heredoc_lines(int fd, const char *delimiter,
-			int should_expand, int *exit_status);
+void	process_heredoc_lines(int fd, const char *delimiter, int *exit_status);
 int		prepare_heredoc(t_data *data, char **temp_file,
-			char **delimiter, int *should_expand);
+			char **delimiter);
 int		handle_fork_error(char *temp_file, char *delimiter);
 int		run_heredoc_child(const char *temp_file, const char *delimiter,
-			int should_expand, int *exit_status);
-int		is_quoted_delimiter(char *delimiter);
+			int *exit_status);
 char	*create_heredoc_tempfile(void);
-char	*expand_vars_in_line(const char *line, int *exit_status);
+char	*expand_vars_in_line(const char *line, int exit_status);
+int		handle_fork_error(char *temp_file, char *delimiter);
+char	*ft_readline(void);
 
 #endif

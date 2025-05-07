@@ -6,101 +6,99 @@
 /*   By: lshapkin <lshapkin@student.42berlin.de>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/06 19:18:48 by lshapkin          #+#    #+#             */
-/*   Updated: 2025/05/06 19:41:45 by lshapkin         ###   ########.fr       */
+/*   Updated: 2025/05/07 23:26:45 by lshapkin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
-#define BUF_SIZE 4096
-
 char	*create_heredoc_tempfile(void)
 {
+	static int	count;
+	char		*num;
+	size_t		len;
 	char		*filename;
-	static int	heredoc_count;
-	char		count_str[20];
 
-	heredoc_count = 0;
-	sprintf(count_str, "%d", heredoc_count++);
-	filename = ft_strjoin("/tmp/minishell_heredoc_", count_str);
+	num = ft_itoa(count++);
+	len = ft_strlen("/tmp/minishell_heredoc_") + ft_strlen(num) + 1;
+	filename = malloc(len);
+	if (!filename)
+	{
+		free(num);
+		return (NULL);
+	}
+	ft_strlcpy(filename, "/tmp/minishell_heredoc_", len);
+	ft_strlcat(filename, num, ft_strlen(num));
+	free(num);
 	return (filename);
 }
 
-int	is_quoted_delimiter(char *delimiter)
+static int	expand_exit_status(t_expand_utils *ctx)
 {
-	if (delimiter && (delimiter[0] == '\'' || delimiter[0] == '"'))
+	char	*num;
+
+	if (ctx->line[ctx->idx] == '$' && ctx->line[ctx->idx + 1] == '?')
+	{
+		num = ft_itoa(ctx->exit_status);
+		ft_strlcpy(ctx->out + ctx->pos, num, ft_strlen(num) + 1);
+		ctx->pos += ft_strlen(num);
+		free(num);
+		ctx->idx += 2;
 		return (1);
+	}
 	return (0);
 }
 
-int	handle_fork_error(char *temp_file, char *delimiter)
+static int	expand_env_var_ctx(t_expand_utils *ctx)
 {
-	free(temp_file);
-	free(delimiter);
-	perror("fork");
+	int		start;
+	int		len;
+	char	name[256];
+	char	*val;
+
+	if (ctx->line[ctx->idx] != '$')
+		return (0);
+	start = ++ctx->idx;
+	while (isalnum(ctx->line[ctx->idx]) || ctx->line[ctx->idx] == '_')
+		ctx->idx++;
+	len = ctx->idx - start;
+	if (len <= 0)
+		return (0);
+	ft_memcpy(name, ctx->line + start, len);
+	name[len] = '\0';
+	val = getenv(name);
+	if (val)
+	{
+		ft_strlcpy(ctx->out + ctx->pos, val, ft_strlen(val) + 1);
+		ctx->pos += strlen(val);
+	}
 	return (1);
 }
 
-int try_expand_exit(const char *line, int *idx, char *out, int *pos, int exit_status)
+static void	copy_next_char(t_expand_utils *ctx)
 {
-	char	*tmp;
-
-	if (line[*idx] == '$' && line[*idx + 1] == '?')
-	{
-		tmp = ft_itoa(exit_status);
-		ft_strlcpy(out + *pos, tmp, BUF_SIZE - *pos);
-		*pos += ft_strlen(tmp);
-		free(tmp);
-		*idx += 2;
-		return (1);
-	}
-	return (0);
+	ctx->out[ctx->pos++] = ctx->line[ctx->idx++];
 }
 
-void	expand_env_var(const char *line, int *idx, char *out, int *pos)
+char	*expand_vars_in_line(const char *line, int exit_status)
 {
-	char	var_name[256];
-	int		len;
-	char	*val;
+	t_expand_utils	ctx;
 
-	len = 0;
-	(*idx)++;
-	while (line[*idx] && (ft_isalnum(line[*idx]) || line[*idx] == '_'))
-		var_name[len++] = line[(*idx)++];
-	var_name[len] = '\0';
-	val = getenv(var_name);
-	if (val)
-	{
-		ft_strlcpy(out + *pos, val, BUF_SIZE - *pos);
-		*pos += ft_strlen(val);
-	}
-}
-
-void copy_char(const char *line, int *idx, char *out, int *pos)
-{
-	out[(*pos)++] = line[(*idx)++];
-}
-
-char *expand_vars_in_line(const char *line, int *exit_status)
-{
-	char	*out;
-	int		i;
-	int		j;
-
-	out = malloc(BUF_SIZE);
-	if (!out)
+	ctx.line = line;
+	ctx.out = malloc(BUF_SIZE);
+	ctx.idx = 0;
+	ctx.pos = 0;
+	ctx.exit_status = exit_status;
+	if (!ctx.out)
 		return (NULL);
-	i = 0;
-	j = 0;
-	while (line[i])
+	while (line[ctx.idx])
 	{
-		if (try_expand_exit(line, &i, out, &j, *exit_status))
+		if (expand_exit_status(&ctx))
 			continue ;
-		if (line[i] == '$' && (ft_isalnum(line[i + 1]) || line[i + 1] == '_'))
-			expand_env_var(line, &i, out, &j);
-		else
-			copy_char(line, &i, out, &j);
+		if (expand_env_var_ctx(&ctx))
+			continue ;
+		copy_next_char(&ctx);
 	}
-	out[j] = '\0';
-	return (out);
+	ctx.out[ctx.pos] = '\0';
+	return (ctx.out);
 }

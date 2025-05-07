@@ -6,7 +6,7 @@
 /*   By: lshapkin <lshapkin@student.42berlin.de>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/23 19:27:54 by lshapkin          #+#    #+#             */
-/*   Updated: 2025/05/06 19:42:10 by lshapkin         ###   ########.fr       */
+/*   Updated: 2025/05/07 21:22:20 by lshapkin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,7 +41,7 @@ int	process_all_heredocs(t_data *node, int *exit_status)
 }
 
 void	process_heredoc_lines(int fd, const char *delimiter,
-			int should_expand, int *exit_status)
+			int *exit_status)
 {
 	char	*line;
 	char	*expanded;
@@ -54,29 +54,21 @@ void	process_heredoc_lines(int fd, const char *delimiter,
 			free(line);
 			break ;
 		}
-		if (should_expand)
+		expanded = expand_vars_in_line(line, exit_status);
+		free(line);
+		if (!expanded)
 		{
-			expanded = expand_vars_in_line(line, exit_status);
-			free(line);
-			if (!expanded)
-			{
-				close(fd);
-				exit(1);
-			}
-			write(fd, expanded, ft_strlen(expanded));
-			free(expanded);
+			close(fd);
+			exit(1);
 		}
-		else
-		{
-			write(fd, line, ft_strlen(line));
-			free(line);
-		}
+		write(fd, expanded, ft_strlen(expanded));
+		free(expanded);
 		write(fd, "\n", 1);
 	}
 }
 
 int	run_heredoc_child(const char *temp_file, const char *delimiter,
-	int should_expand, int *exit_status)
+	int *exit_status)
 {
 	int	fd;
 
@@ -87,9 +79,12 @@ int	run_heredoc_child(const char *temp_file, const char *delimiter,
 		perror("heredoc temp file");
 		exit(1);
 	}
-	process_heredoc_lines(fd, delimiter, should_expand, exit_status);
+	process_heredoc_lines(fd, delimiter, exit_status);
 	close(fd);
 	free((char *)delimiter);
 	free((char *)temp_file);
-	exit(g_heredoc_sigint ? 130 : 0);
+	if (g_heredoc_sigint)
+		exit(130);
+	else
+		exit(0);
 }
