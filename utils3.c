@@ -12,6 +12,8 @@
 
 #include "minishell.h"
 
+int	g_shell_state = 0;
+
 int	handle_fork_error(char *temp_file, char *delimiter)
 {
 	free(temp_file);
@@ -20,15 +22,16 @@ int	handle_fork_error(char *temp_file, char *delimiter)
 	return (1);
 }
 
+//~ NOT operator, from 0001 to 1110, then an AND operator results in 0
 char	*ft_readline(void)
 {
 	char	*input;
 	char	*prompt;
 
-	g_in_prompt = 1;
+	g_shell_state = g_shell_state | 1;
 	prompt = "minishell>";
 	input = readline(prompt);
-	g_in_prompt = 0;
+	g_shell_state = g_shell_state & -1;
 	if (input)
 		add_history(input);
 	return (input);

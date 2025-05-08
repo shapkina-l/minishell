@@ -48,7 +48,7 @@ void	my_shell_handler(int signum)
 {
 	(void)signum;
 	write(STDOUT_FILENO, "\n", 1);
-	if (g_in_prompt)
+	if (g_shell_state & 1)
 	{
 		rl_replace_line("", 0);
 		rl_on_new_line();

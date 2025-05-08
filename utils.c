@@ -24,20 +24,21 @@ char	*make_cmd_check(char *argv, struct stat file_stat)
 	return (NULL);
 }
 
+//initialize file_stat with stat()
 char	*make_cmd(char **cmd_path, char *argv)
 {
 	char		*tmp;
 	char		*cmd;
 	struct stat	file_stat;
 
-	if (!argv || !*argv)
-		return (NULL);
-	if (!cmd_path || !cmd_path[0])
+	if (!argv || !*argv || !cmd_path || !cmd_path[0])
 		return (NULL);
 	if (argv[0] == '/' || (argv[0] == '.'
 			&& (argv[1] == '/' || (argv[1] == '.' && argv[2] == '/'))))
 	{
-		return (make_cmd_check(argv, file_stat));
+		if (stat(argv, &file_stat) == 0)
+			return (make_cmd_check(argv, file_stat));
+		return (NULL);
 	}
 	while (*cmd_path)
 	{

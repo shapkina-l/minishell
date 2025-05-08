@@ -12,12 +12,19 @@
 
 #include "minishell.h"
 
-int g_heredoc_sigint = 0;
+//1 << 1: This is a bitwise left shift operation.
+//The 1 in binary is 0001 (assuming we're working with 4 bits for simplicity).
+//The operation 1 << 1 shifts the bits of 1 to the left by 1 position. 
+//The result is 0010, which is 2 in decimal.
+//So, (1 << 1) equals 2 (binary 0010).
+//g_shell_state |= (1 << 1): Now, you're performing a bitwise OR assignment.
+//The value of g_shell_state is bitwise OR'd with the result of 1 << 1, 
+//which is 2 (binary 0010).
 
 void	handle_heredoc_signal(int sig)
 {
 	(void)sig;
-	g_heredoc_sigint = 1;
+	g_shell_state = g_shell_state | (1 << 1);
 	write(STDOUT_FILENO, "\n", 1);
 	close(STDIN_FILENO);
 }
@@ -49,12 +56,13 @@ void	process_heredoc_lines(int fd, const char *delimiter,
 	while (1)
 	{
 		line = readline("> ");
-		if (!line || g_heredoc_sigint || ft_strcmp(line, delimiter) == 0)
+		if (!line || (g_shell_state & (1 << 1)) || 
+			ft_strcmp(line, delimiter) == 0)
 		{
 			free(line);
 			break ;
 		}
-		expanded = expand_vars_in_line(line, exit_status);
+		expanded = expand_vars_in_line(line, *exit_status);
 		free(line);
 		if (!expanded)
 		{
@@ -83,7 +91,7 @@ int	run_heredoc_child(const char *temp_file, const char *delimiter,
 	close(fd);
 	free((char *)delimiter);
 	free((char *)temp_file);
-	if (g_heredoc_sigint)
+	if (g_shell_state & (1 << 1))
 		exit(130);
 	else
 		exit(0);

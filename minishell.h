@@ -29,7 +29,9 @@
 
 # define BUF_SIZE 4096
 
-extern int	g_in_prompt;
+//Single global variable with bit flags
+// Bit 0: g_in_prompt, Bit 1: g_heredoc_sigint
+extern int	g_shell_state;
 
 typedef enum e_exec_type
 {
@@ -123,6 +125,12 @@ typedef struct s_expand_utils
 	int			pos;
 	int			exit_status;
 }	t_expand_utils;
+
+typedef struct s_process_word_data
+{
+	int		*exit_status;
+	char	*quote_char;
+}	t_process_word_data;
 
 int		execute(t_data *data, int *exit_status);
 void	free_exec(t_data *data);

@@ -52,29 +52,31 @@ t_token	*tokenize_operator(char **input)
 	return (NULL);
 }
 
-int	process_word_char(char *buffer, char **input, int *exit_status, char *quote_char, int buf_index)
+// struct because of maximum 4 arguments
+int	process_word_char(t_process_word_data *data, char *buffer, 
+	char **input, int buf_index)
 {
 	char	*status_str;
 
-	if (**input == '$' && *(*input + 1) == '?' && *quote_char != '\'')
+	if (**input == '$' && *(*input + 1) == '?' && *data->quote_char != '\'')
 	{
 		(*input) += 2;
-		status_str = ft_itoa(*exit_status);
+		status_str = ft_itoa(*data->exit_status);
 		ft_strlcpy(buffer + buf_index, status_str, 1024 - buf_index);
 		buf_index += ft_strlen(status_str);
 		return (free(status_str), buf_index);
 	}
-	if ((**input == '\'' || **input == '"') && *quote_char == 0)
+	if ((**input == '\'' || **input == '"') && *data->quote_char == 0)
 	{
-		*quote_char = **input;
+		*data->quote_char = **input;
 		return ((*input)++, buf_index);
 	}
-	if (**input == *quote_char)
+	if (**input == *data->quote_char)
 	{
-		*quote_char = 0;
+		*data->quote_char = 0;
 		return ((*input)++, buf_index);
 	}
-	if (**input == '$' && *quote_char != '\'')
+	if (**input == '$' && *data->quote_char != '\'')
 		return (handle_env_var(input, buffer, buf_index));
 	buffer[buf_index++] = **input;
 	return ((*input)++, buf_index);
@@ -82,17 +84,19 @@ int	process_word_char(char *buffer, char **input, int *exit_status, char *quote_
 
 void	tokenize_word_loop(char *buffer, char **input, int *exit_status)
 {
-	int		buf_index;
-	char	quote_char;
+	int					buf_index;
+	char				quote_char;
+	t_process_word_data	data;
 
 	buf_index = 0;
 	quote_char = 0;
+	data.exit_status = exit_status;
+	data.quote_char = &quote_char;
 	while (**input)
 	{
 		if (!quote_char && ft_strchr(" \t|<>", **input))
 			break ;
-		buf_index = process_word_char(buffer, input,
-				exit_status, &quote_char, buf_index);
+		buf_index = process_word_char(&data, buffer, input, buf_index);
 	}
 	buffer[buf_index] = '\0';
 }

@@ -12,8 +12,6 @@
 
 #include "minishell.h"
 
-int		g_in_prompt = 0; // global variable must be defined in a function to allocate space for it
-
 char	**dup_envp(char **envp)
 {
 	int		i;
