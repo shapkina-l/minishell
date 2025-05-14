@@ -6,7 +6,7 @@
 /*   By: lshapkin <lshapkin@student.42berlin.de>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/16 15:16:26 by lshapkin          #+#    #+#             */
-/*   Updated: 2025/05/07 23:38:34 by lshapkin         ###   ########.fr       */
+/*   Updated: 2025/05/14 15:57:30 by lshapkin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -90,6 +90,7 @@ void	main_loop(t_data *root, int *last_exit_status, char **my_envp)
 			continue ;
 		}
 		*last_exit_status = execute(root, last_exit_status);
+		reset_redirections(root->original_stdin, root->original_stdout);
 		cleanup_heredoc_files(root);
 		my_envp = root->my_envp;
 		free(input);

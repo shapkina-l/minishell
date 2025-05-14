@@ -6,7 +6,7 @@
 /*   By: lshapkin <lshapkin@student.42berlin.de>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/05 16:43:30 by lshapkin          #+#    #+#             */
-/*   Updated: 2025/05/06 18:40:29 by lshapkin         ###   ########.fr       */
+/*   Updated: 2025/05/14 16:25:04 by lshapkin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -84,6 +84,23 @@ int	builtin(t_data *data, int *exit_status)
 	return (1);
 }
 
+// int	execute_redirection(t_data *data, int *ret, int *exit_status)
+// {
+// 	t_data	*command_node;
+
+// 	command_node = get_command_node(data);
+// 	if (!command_node)
+// 		return (1);
+// 	if (check_all_files(data))
+// 		return (perror(data->redirection_file), 1);
+// 	apply_redirections(data);
+// 	if (command_node->type == EXECUTION || command_node->type == BUILTIN)
+// 		*ret = execute(command_node, exit_status);
+// 	else
+// 		return (1);
+// 	return (0);
+// }
+
 int	execute_redirection(t_data *data, int *ret, int *exit_status)
 {
 	t_data	*command_node;
@@ -94,8 +111,28 @@ int	execute_redirection(t_data *data, int *ret, int *exit_status)
 	if (check_all_files(data))
 		return (perror(data->redirection_file), 1);
 	apply_redirections(data);
-	if (command_node->type == EXECUTION || command_node->type == BUILTIN)
-		*ret = execute(command_node, exit_status);
+	if (command_node->type == EXECUTION)
+		*ret = exec(command_node);
+	else if (command_node->type == BUILTIN) //move to a separate function
+	{
+		pid_t pid;
+		int   status;
+
+		pid = fork();
+		if (pid < 0)
+			return (perror("fork"), 1);
+		if (pid == 0)
+		{
+			signal(SIGINT,  SIG_DFL);
+			signal(SIGQUIT, SIG_DFL);
+			exit(builtin(command_node, exit_status));
+		}
+		waitpid(pid, &status, 0);
+		if (WIFEXITED(status))
+			*ret = WEXITSTATUS(status);
+		else
+			*ret = 1;
+	}
 	else
 		return (1);
 	return (0);
@@ -119,7 +156,7 @@ int	execute(t_data *data, int *exit_status)
 	}
 	else if (data->type == BUILTIN)
 		ret = builtin(data, exit_status);
-	reset_redirections(data->original_stdin, data->original_stdout);
+	//reset_redirections(data->original_stdin, data->original_stdout);
 	*exit_status = ret;
 	return (ret);
 }
