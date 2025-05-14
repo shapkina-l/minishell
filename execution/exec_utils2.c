@@ -68,13 +68,14 @@ int	ft_exit(t_data *data, int *exit_status)
 		exit(*exit_status);
 	if (!is_numeric(data->args[1]))
 	{
-		fprintf(stderr, "minishell: exit: %s: numeric argument required\n",
-			data->args[1]);
+		write(STDERR_FILENO, "minishell: exit: ", 17);
+		write(STDERR_FILENO, data->args[1], ft_strlen(data->args[1]));
+		write(STDERR_FILENO, ": numeric argument required\n", 29);
 		exit(2);
 	}
 	if (data->args[2])
 	{
-		fprintf(stderr, "minishell: exit: too many arguments\n");
+		write(STDERR_FILENO, "minishell: exit: too many arguments\n", 36);
 		*exit_status = 1;
 		return (1);
 	}

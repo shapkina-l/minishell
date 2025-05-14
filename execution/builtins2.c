@@ -101,8 +101,13 @@ int	ft_export_loop(t_data *data, int i, int var_exists)
 		if (equals_pos)
 			*equals_pos = '\0';
 		if (!is_valid_identifier(var_name))
-			return (fprintf(stderr, "export: `%s': not a valid identifier\n",
-					data->args[i]), free(var_name), 1);
+		{
+			write(STDERR_FILENO, "export: `", 9);
+			write(STDERR_FILENO, data->args[i], ft_strlen(data->args[i]));
+			write(STDERR_FILENO, "': not a valid identifier\n", 27);
+			free(var_name);
+			return (1);
+		}
 		free(var_name);
 		if (ft_strchr(data->args[i], '='))
 		{

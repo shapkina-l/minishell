@@ -12,6 +12,20 @@
 
 #include "../minishell.h"
 
+char *get_env_value(const char *name, char **my_envp)
+{
+	int i = 0;
+	size_t len = ft_strlen(name);
+
+	while (my_envp[i])
+	{
+		if (ft_strncmp(my_envp[i], name, len) == 0 && my_envp[i][len] == '=')
+			return (my_envp[i] + len + 1);
+		i++;
+	}
+	return (NULL);
+}
+
 void	node_full_cmd(t_token *token, t_data *node)
 {
 	char	*path;
@@ -23,7 +37,7 @@ void	node_full_cmd(t_token *token, t_data *node)
 	cmd_path = NULL;
 	full_cmd = NULL;
 	i = 0;
-	path = getenv("PATH");
+	path = get_env_value("PATH", node->my_envp);
 	if (!path || !*path)
 		printf("Path is empty string\n");
 	cmd_path = ft_split(path, ':');
