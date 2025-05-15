@@ -42,7 +42,7 @@ int	finalize_heredoc(int status, char *temp_file,
 	return (0);
 }
 
-int	handle_heredoc(t_data *data, int *exit_status)
+int	handle_heredoc(t_data *data, int *exit_status, char **my_envp)
 {
 	char	*temp_file;
 	char	*delimiter;
@@ -55,7 +55,7 @@ int	handle_heredoc(t_data *data, int *exit_status)
 	if (pid < 0)
 		return (handle_fork_error(temp_file, delimiter));
 	if (pid == 0)
-		run_heredoc_child(temp_file, delimiter, exit_status);
+		run_heredoc_child(temp_file, delimiter, exit_status, my_envp);
 	waitpid(pid, &status, 0);
 	free(delimiter);
 	return (finalize_heredoc(status, temp_file, data, exit_status));

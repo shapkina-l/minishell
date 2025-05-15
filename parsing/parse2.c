@@ -92,7 +92,7 @@ t_data	*parse_input(char *input, int *exit_status, char **my_envp)
 
 	if (!input || !*input)
 		return (NULL);
-	token_list = tokenize(input, exit_status);
+	token_list = tokenize(input, exit_status, my_envp);
 	if (!token_list)
 		return (NULL);
 	token = token_list;

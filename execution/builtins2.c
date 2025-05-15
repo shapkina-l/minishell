@@ -58,32 +58,68 @@ int	ft_export_var_exists(char *new_var, char *envp[])
 	return (0);
 }
 
+void	sort_envp(char **my_envp)
+{
+	int		i;
+	int		j;
+	char	*tmp;
+
+	i = 0;
+	while (my_envp && my_envp[i])
+	{
+		j = i + 1;
+		while (my_envp[j])
+		{
+			if (ft_strncmp(my_envp[i], my_envp[j], ft_strlen(my_envp[i]) + 1) > 0)
+			{
+				tmp = my_envp[i];
+				my_envp[i] = my_envp[j];
+				my_envp[j] = tmp;
+			}
+			j++;
+		}
+		i++;
+	}
+}
+
 int	ft_export_var_create(char *new_var, t_data *data)
 {
 	int		len;
 	char	**new_envp;
 	char	*dup_var;
 	int		i;
+	int		insert_pos;
 
 	if (!data->my_envp)
 		return (-1);
 	len = 0;
-	while ((data->my_envp)[len])
+	while (data->my_envp && (data->my_envp)[len])
 		len++;
 	new_envp = malloc(sizeof(char *) * (len + 2));
 	if (!new_envp)
 		return (-1);
+	dup_var = ft_strdup(new_var);
+	if (!dup_var)
+		return (free(new_envp), -1);
+	insert_pos = 0;
+	while (insert_pos < len && ft_strncmp(data->my_envp[insert_pos], 
+		dup_var, ft_strlen(data->my_envp[insert_pos]) + 1) < 0)
+		insert_pos++;
 	i = 0;
-	while (i < len)
+	while (i < insert_pos)
 	{
 		new_envp[i] = data->my_envp[i];
 		i++;
 	}
-	dup_var = ft_strdup(new_var);
-	if (!dup_var)
-		return (free(new_envp), -1);
-	new_envp[len] = dup_var;
-	new_envp[len + 1] = NULL;
+	new_envp[i] = dup_var;
+	i++;
+	while (i < len + 1)
+	{
+		new_envp[i] = data->my_envp[insert_pos];
+		insert_pos++;
+		i++;
+	}
+	new_envp[i] = NULL;
 	return (free(data->my_envp), data->my_envp = new_envp, 0);
 }
 
@@ -127,6 +163,7 @@ int	ft_export(t_data *data)
 	if (!data->args[1])
 	{
 		i = 0;
+		sort_envp(data->my_envp);
 		while ((data->my_envp)[i])
 			printf("declare -x %s\n", (data->my_envp)[i++]);
 		return (0);

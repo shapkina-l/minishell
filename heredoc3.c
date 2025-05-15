@@ -49,7 +49,7 @@ static int	expand_exit_status(t_expand_utils *ctx)
 	return (0);
 }
 
-static int	expand_env_var_ctx(t_expand_utils *ctx)
+static int	expand_env_var_ctx(t_expand_utils *ctx, char **my_envp)
 {
 	int		start;
 	int		len;
@@ -66,7 +66,7 @@ static int	expand_env_var_ctx(t_expand_utils *ctx)
 		return (0);
 	ft_memcpy(name, ctx->line + start, len);
 	name[len] = '\0';
-	val = getenv(name);
+	val = get_env_value(name, my_envp);
 	if (val)
 	{
 		ft_strlcpy(ctx->out + ctx->pos, val, ft_strlen(val) + 1);
@@ -80,7 +80,7 @@ static void	copy_next_char(t_expand_utils *ctx)
 	ctx->out[ctx->pos++] = ctx->line[ctx->idx++];
 }
 
-char	*expand_vars_in_line(const char *line, int exit_status)
+char	*expand_vars_in_line(const char *line, int exit_status, char ** my_envp)
 {
 	t_expand_utils	ctx;
 
@@ -95,7 +95,7 @@ char	*expand_vars_in_line(const char *line, int exit_status)
 	{
 		if (expand_exit_status(&ctx))
 			continue ;
-		if (expand_env_var_ctx(&ctx))
+		if (expand_env_var_ctx(&ctx, my_envp))
 			continue ;
 		copy_next_char(&ctx);
 	}

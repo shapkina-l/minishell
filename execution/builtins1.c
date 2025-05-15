@@ -51,7 +51,7 @@ int	ft_cd(t_data *data)
 		path = data->args[1];
 	}
 	else
-		path = getenv("HOME");
+		path = get_env_value("HOME", data->my_envp);
 	if (!path)
 	{
 		printf("cd: HOME not set\n");

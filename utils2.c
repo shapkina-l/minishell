@@ -18,7 +18,7 @@ void	skip_whitespaces(char **input)
 		(*input)++;
 }
 
-int	handle_env_var(char **input, char *buffer, int buf_index)
+int	handle_env_var(char **input, char *buffer, int buf_index, char **my_envp)
 {
 	char	var_name[100];
 	int		var_len;
@@ -35,7 +35,7 @@ int	handle_env_var(char **input, char *buffer, int buf_index)
 	if (var_len != 0)
 	{
 		var_name[var_len] = '\0';
-		value = getenv(var_name);
+		value = get_env_value(var_name, my_envp);
 		if (!value)
 			value = "";
 	}

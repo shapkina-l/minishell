@@ -29,26 +29,26 @@ void	handle_heredoc_signal(int sig)
 	close(STDIN_FILENO);
 }
 
-int	process_all_heredocs(t_data *node, int *exit_status)
+int	process_all_heredocs(t_data *node, int *exit_status, char **my_envp)
 {
 	if (!node)
 	{
 		return (0);
 	}
-	if (process_all_heredocs(node->left, exit_status))
+	if (process_all_heredocs(node->left, exit_status, my_envp))
 		return (1);
 	if (node->type == REDIRECTION && node->redirection_type == REDIRECT_HEREDOC)
 	{
-		if (handle_heredoc(node, exit_status) != 0)
+		if (handle_heredoc(node, exit_status, my_envp) != 0)
 			return (1);
 	}
-	if (process_all_heredocs(node->right, exit_status))
+	if (process_all_heredocs(node->right, exit_status, my_envp))
 		return (1);
 	return (0);
 }
 
 void	process_heredoc_lines(int fd, const char *delimiter,
-			int *exit_status)
+			int *exit_status, char **my_envp)
 {
 	char	*line;
 	char	*expanded;
@@ -62,7 +62,7 @@ void	process_heredoc_lines(int fd, const char *delimiter,
 			free(line);
 			break ;
 		}
-		expanded = expand_vars_in_line(line, *exit_status);
+		expanded = expand_vars_in_line(line, *exit_status, my_envp);
 		free(line);
 		if (!expanded)
 		{
@@ -76,7 +76,7 @@ void	process_heredoc_lines(int fd, const char *delimiter,
 }
 
 int	run_heredoc_child(const char *temp_file, const char *delimiter,
-	int *exit_status)
+	int *exit_status, char **my_envp)
 {
 	int	fd;
 
@@ -87,7 +87,7 @@ int	run_heredoc_child(const char *temp_file, const char *delimiter,
 		perror("heredoc temp file");
 		exit(1);
 	}
-	process_heredoc_lines(fd, delimiter, exit_status);
+	process_heredoc_lines(fd, delimiter, exit_status, my_envp);
 	close(fd);
 	free((char *)delimiter);
 	free((char *)temp_file);

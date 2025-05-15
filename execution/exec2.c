@@ -43,7 +43,7 @@ void	pipes_left_child(t_pipes_utils *utils, t_data *data,
 	{
 		signal(SIGINT, SIG_DFL);
 		signal(SIGQUIT, SIG_DFL);
-		signal(SIGPIPE, SIG_IGN);
+		signal(SIGPIPE, SIG_DFL);
 		if (!has_output_redirection(data->left))
 			dup2(fd[1], STDOUT_FILENO);
 		close_fd(fd);
@@ -63,7 +63,7 @@ void	pipes_right_child(t_pipes_utils *utils, t_data *data,
 	{
 		signal(SIGINT, SIG_DFL);
 		signal(SIGQUIT, SIG_DFL);
-		signal(SIGPIPE, SIG_IGN);
+		signal(SIGPIPE, SIG_DFL);
 		if (!has_input_redirection(data->right))
 			dup2(fd[0], STDIN_FILENO);
 		close_fd(fd);

@@ -30,7 +30,7 @@ t_token	*add_token(t_token **head, t_token *current, t_token *new)
 	return (new);
 }
 
-t_token	*tokenize(char *input, int *exit_status)
+t_token	*tokenize(char *input, int *exit_status, char **my_envp)
 {
 	t_token	*head;
 	t_token	*current;
@@ -38,6 +38,8 @@ t_token	*tokenize(char *input, int *exit_status)
 
 	head = NULL;
 	current = NULL;
+	if (!input || !*input)
+		return (NULL);
 	while (*input)
 	{
 		skip_whitespaces(&input);
@@ -46,7 +48,7 @@ t_token	*tokenize(char *input, int *exit_status)
 		if (ft_strchr("|<>", *input))
 			new = tokenize_operator(&input);
 		else
-			new = tokenize_word(&input, exit_status);
+			new = tokenize_word(&input, exit_status, my_envp);
 		current = add_token(&head, current, new);
 	}
 	return (head);

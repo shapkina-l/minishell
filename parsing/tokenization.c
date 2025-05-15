@@ -76,12 +76,12 @@ int	process_word_char(t_process_word_data *data, char *buffer,
 		return ((*input)++, buf_index);
 	}
 	if (**input == '$' && *data->quote_char != '\'')
-		return (handle_env_var(input, buffer, buf_index));
+		return (handle_env_var(input, buffer, buf_index, data->my_envp));
 	buffer[buf_index++] = **input;
 	return ((*input)++, buf_index);
 }
 
-void	tokenize_word_loop(char *buffer, char **input, int *exit_status)
+void	tokenize_word_loop(char *buffer, char **input, int *exit_status, char **my_envp)
 {
 	int					buf_index;
 	char				quote_char;
@@ -91,6 +91,7 @@ void	tokenize_word_loop(char *buffer, char **input, int *exit_status)
 	quote_char = 0;
 	data.exit_status = exit_status;
 	data.quote_char = &quote_char;
+	data.my_envp = my_envp;
 	while (**input)
 	{
 		if (!quote_char && ft_strchr(" \t|<>", **input))
@@ -100,16 +101,18 @@ void	tokenize_word_loop(char *buffer, char **input, int *exit_status)
 	buffer[buf_index] = '\0';
 }
 
-t_token	*tokenize_word(char **input, int *exit_status)
+t_token	*tokenize_word(char **input, int *exit_status, char **my_envp)
 {
 	char	*buffer;
 	t_token	*token;
 	char	*dup_value;
 
+	if (!input || !*input)
+		return (NULL);
 	buffer = malloc(1024);
 	if (!buffer)
 		return (NULL);
-	tokenize_word_loop(buffer, input, exit_status);
+	tokenize_word_loop(buffer, input, exit_status, my_envp);
 	if (buffer[0] == '\0')
 	{
 		free(buffer);

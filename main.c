@@ -83,7 +83,7 @@ void	main_loop(t_data *root, int *last_exit_status, char **my_envp)
 			free(input);
 			continue ;
 		}
-		if (process_all_heredocs(root, last_exit_status))
+		if (process_all_heredocs(root, last_exit_status, my_envp))
 		{
 			cleanup_heredoc_files(root);
 			free_exec(root);

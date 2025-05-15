@@ -31,7 +31,7 @@ char	*ft_readline(void)
 	g_shell_state = g_shell_state | 1;
 	prompt = "minishell>";
 	input = readline(prompt);
-	g_shell_state = g_shell_state & -1;
+	g_shell_state = g_shell_state & ~1;
 	if (input)
 		add_history(input);
 	return (input);
