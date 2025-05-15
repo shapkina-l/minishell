@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   exec_utils3.c                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lshapkin <lshapkin@student.42berlin.de>    +#+  +:+       +#+        */
+/*   By: lshapkin <lshapkin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/03 20:46:17 by lshapkin          #+#    #+#             */
-/*   Updated: 2025/05/03 20:55:38 by lshapkin         ###   ########.fr       */
+/*   Updated: 2025/05/15 14:23:01 by lshapkin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,4 +55,22 @@ void	clean_exit_child(t_data *branch, int ret)
 	free_exec(branch);
 	rl_clear_history();
 	exit(ret);
+}
+
+void	builtin_in_redirection(t_data *command_node, int *exit_status,
+	int *ret, int pid)
+{
+	int		status;
+
+	if (pid == 0)
+	{
+		signal(SIGINT, SIG_DFL);
+		signal(SIGQUIT, SIG_DFL);
+		exit(builtin(command_node, exit_status));
+	}
+	waitpid(pid, &status, 0);
+	if (WIFEXITED(status))
+		*ret = WEXITSTATUS(status);
+	else
+		*ret = 1;
 }

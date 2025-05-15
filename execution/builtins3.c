@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   builtins3.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lshapkin <lshapkin@student.42berlin.de>    +#+  +:+       +#+        */
+/*   By: lshapkin <lshapkin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/03 15:24:27 by lshapkin          #+#    #+#             */
-/*   Updated: 2025/05/03 15:25:15 by lshapkin         ###   ########.fr       */
+/*   Updated: 2025/05/15 14:00:33 by lshapkin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,4 +50,26 @@ int	ft_unset(t_data *data)
 		return (0);
 	ft_unset_loop(data, len);
 	return (0);
+}
+
+int	ft_exit(t_data *data, int *exit_status)
+{
+	long	code;
+
+	printf("exit\n");
+	if (!data->args[1])
+		exit(*exit_status);
+	if (!is_numeric(data->args[1]))
+	{
+		print_error("minishell: exit", "numeric argument required");
+		exit(2);
+	}
+	if (data->args[2])
+	{
+		write(STDERR_FILENO, "minishell: exit: too many arguments\n", 36);
+		*exit_status = 1;
+		return (1);
+	}
+	code = ft_atol(data->args[1]);
+	exit((unsigned char)code);
 }

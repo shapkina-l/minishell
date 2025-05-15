@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   utils3.c                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lshapkin <lshapkin@student.42berlin.de>    +#+  +:+       +#+        */
+/*   By: lshapkin <lshapkin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/07 21:30:23 by lshapkin          #+#    #+#             */
-/*   Updated: 2025/05/07 23:38:47 by lshapkin         ###   ########.fr       */
+/*   Updated: 2025/05/15 14:26:40 by lshapkin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,4 +35,10 @@ char	*ft_readline(void)
 	if (input)
 		add_history(input);
 	return (input);
+}
+
+void	reset_redir_and_cleanup_heredoc(t_data *root)
+{
+	reset_redirections(root->original_stdin, root->original_stdout);
+	cleanup_heredoc_files(root);
 }

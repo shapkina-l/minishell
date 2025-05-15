@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   tokenization.c                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lshapkin <lshapkin@student.42berlin.de>    +#+  +:+       +#+        */
+/*   By: lshapkin <lshapkin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/18 15:17:19 by lshapkin          #+#    #+#             */
-/*   Updated: 2025/05/07 23:39:36 by lshapkin         ###   ########.fr       */
+/*   Updated: 2025/05/15 14:11:59 by lshapkin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,7 +52,6 @@ t_token	*tokenize_operator(char **input)
 	return (NULL);
 }
 
-// struct because of maximum 4 arguments
 int	process_word_char(t_process_word_data *data, char *buffer, 
 	char **input, int buf_index)
 {

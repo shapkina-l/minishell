@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   exec_utils2.c                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lshapkin <lshapkin@student.42berlin.de>    +#+  +:+       +#+        */
+/*   By: lshapkin <lshapkin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/03 14:39:22 by lshapkin          #+#    #+#             */
-/*   Updated: 2025/05/06 17:47:31 by lshapkin         ###   ########.fr       */
+/*   Updated: 2025/05/15 14:00:16 by lshapkin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,28 +57,4 @@ int	is_numeric(char *str)
 		i++;
 	}
 	return (1);
-}
-
-int	ft_exit(t_data *data, int *exit_status)
-{
-	long	code;
-
-	printf("exit\n");
-	if (!data->args[1])
-		exit(*exit_status);
-	if (!is_numeric(data->args[1]))
-	{
-		write(STDERR_FILENO, "minishell: exit: ", 17);
-		write(STDERR_FILENO, data->args[1], ft_strlen(data->args[1]));
-		write(STDERR_FILENO, ": numeric argument required\n", 29);
-		exit(2);
-	}
-	if (data->args[2])
-	{
-		write(STDERR_FILENO, "minishell: exit: too many arguments\n", 36);
-		*exit_status = 1;
-		return (1);
-	}
-	code = ft_atol(data->args[1]);
-	exit((unsigned char)code);
 }

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   builtins1.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lshapkin <lshapkin@student.42berlin.de>    +#+  +:+       +#+        */
+/*   By: lshapkin <lshapkin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/12 19:01:51 by lshapkin          #+#    #+#             */
-/*   Updated: 2025/05/03 23:10:46 by lshapkin         ###   ########.fr       */
+/*   Updated: 2025/05/15 13:57:50 by lshapkin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,7 +45,7 @@ int	ft_cd(t_data *data)
 	{
 		if (data->args[2])
 		{
-			write(STDERR_FILENO, "cd: too many arguments\n", 23);
+			print_error("cd", "too many arguments");
 			return (1);
 		}
 		path = data->args[1];

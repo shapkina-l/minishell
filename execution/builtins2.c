@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   builtins2.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lshapkin <lshapkin@student.42berlin.de>    +#+  +:+       +#+        */
+/*   By: lshapkin <lshapkin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/12 19:01:51 by lshapkin          #+#    #+#             */
-/*   Updated: 2025/05/03 15:24:54 by lshapkin         ###   ########.fr       */
+/*   Updated: 2025/05/15 13:59:04 by lshapkin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -101,13 +101,8 @@ int	ft_export_loop(t_data *data, int i, int var_exists)
 		if (equals_pos)
 			*equals_pos = '\0';
 		if (!is_valid_identifier(var_name))
-		{
-			write(STDERR_FILENO, "export: `", 9);
-			write(STDERR_FILENO, data->args[i], ft_strlen(data->args[i]));
-			write(STDERR_FILENO, "': not a valid identifier\n", 27);
-			free(var_name);
-			return (1);
-		}
+			return (print_error("export", "not a valid identifier"), 
+				free(var_name), 1);
 		free(var_name);
 		if (ft_strchr(data->args[i], '='))
 		{

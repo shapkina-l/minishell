@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   minishell.h                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lshapkin <lshapkin@student.42berlin.de>    +#+  +:+       +#+        */
+/*   By: lshapkin <lshapkin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/05 16:30:03 by lshapkin          #+#    #+#             */
-/*   Updated: 2025/05/07 23:37:42 by lshapkin         ###   ########.fr       */
+/*   Updated: 2025/05/15 14:26:12 by lshapkin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -192,5 +192,10 @@ char	*create_heredoc_tempfile(void);
 char	*expand_vars_in_line(const char *line, int exit_status);
 int		handle_fork_error(char *temp_file, char *delimiter);
 char	*ft_readline(void);
+long	ft_atol(const char *str);
+int		is_numeric(char *str);
+void	builtin_in_redirection(t_data *command_node,
+			int *exit_status, int *ret, int pid);
+void	reset_redir_and_cleanup_heredoc(t_data *root);
 
 #endif

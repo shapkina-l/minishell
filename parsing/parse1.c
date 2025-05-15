@@ -3,20 +3,22 @@
 /*                                                        :::      ::::::::   */
 /*   parse1.c                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lshapkin <lshapkin@student.42berlin.de>    +#+  +:+       +#+        */
+/*   By: lshapkin <lshapkin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/05 17:17:56 by apaz-mar          #+#    #+#             */
-/*   Updated: 2025/05/06 18:32:07 by lshapkin         ###   ########.fr       */
+/*   Updated: 2025/05/15 14:11:12 by lshapkin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../minishell.h"
 
-char *get_env_value(const char *name, char **my_envp)
+char	*get_env_value(const char *name, char **my_envp)
 {
-	int i = 0;
-	size_t len = ft_strlen(name);
+	int		i;
+	int		len;
 
+	i = 0;
+	len = ft_strlen(name);
 	while (my_envp[i])
 	{
 		if (ft_strncmp(my_envp[i], name, len) == 0 && my_envp[i][len] == '=')

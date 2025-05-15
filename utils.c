@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   utils.c                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lshapkin <lshapkin@student.42berlin.de>    +#+  +:+       +#+        */
+/*   By: lshapkin <lshapkin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/27 21:48:30 by lshapkin          #+#    #+#             */
-/*   Updated: 2025/05/04 21:35:53 by lshapkin         ###   ########.fr       */
+/*   Updated: 2025/05/15 14:13:43 by lshapkin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,7 +24,6 @@ char	*make_cmd_check(char *argv, struct stat file_stat)
 	return (NULL);
 }
 
-//initialize file_stat with stat()
 char	*make_cmd(char **cmd_path, char *argv)
 {
 	char		*tmp;
