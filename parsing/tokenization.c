@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   tokenization.c                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lshapkin <lshapkin@student.42.fr>          +#+  +:+       +#+        */
+/*   By: lshapkin <lshapkin@student.42berlin.de>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/18 15:17:19 by lshapkin          #+#    #+#             */
-/*   Updated: 2025/05/15 14:11:59 by lshapkin         ###   ########.fr       */
+/*   Updated: 2025/05/20 01:32:27 by lshapkin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,7 +52,7 @@ t_token	*tokenize_operator(char **input)
 	return (NULL);
 }
 
-int	process_word_char(t_process_word_data *data, char *buffer, 
+int	process_word_char(t_process_word_data *data, char *buffer,
 	char **input, int buf_index)
 {
 	char	*status_str;
@@ -81,7 +81,8 @@ int	process_word_char(t_process_word_data *data, char *buffer,
 	return ((*input)++, buf_index);
 }
 
-void	tokenize_word_loop(char *buffer, char **input, int *exit_status, char **my_envp)
+void	tokenize_word_loop(char *buffer, char **input,
+			int *exit_status, char **my_envp)
 {
 	int					buf_index;
 	char				quote_char;

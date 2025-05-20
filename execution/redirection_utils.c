@@ -6,22 +6,31 @@
 /*   By: lshapkin <lshapkin@student.42berlin.de>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/03 20:54:07 by lshapkin          #+#    #+#             */
-/*   Updated: 2025/05/06 18:39:43 by lshapkin         ###   ########.fr       */
+/*   Updated: 2025/05/20 01:59:53 by lshapkin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../minishell.h"
 
-int	check_all_files(t_data *data)
+char	*check_all_files(t_data *data)
 {
-	int	fd;
+	int		fd;
+	char	*broken_file;
 
 	if (!data)
 		return (0);
-	if (data->left && check_all_files(data->left))
-		return (1);
-	if (data->right && check_all_files(data->right))
-		return (1);
+	if (data->left)
+	{
+		broken_file = check_all_files(data->left);
+		if (broken_file != NULL)
+			return (broken_file);
+	}
+	if (data->right)
+	{
+		broken_file = check_all_files(data->right);
+		if (broken_file != NULL)
+			return (broken_file);
+	}
 	if (data->type == REDIRECTION && data->redirection_type != REDIRECT_HEREDOC)
 	{
 		fd = -1;
@@ -34,10 +43,10 @@ int	check_all_files(t_data *data)
 			fd = open(data->redirection_file, O_WRONLY | O_CREAT
 					| O_APPEND, 0644);
 		if (fd == -1)
-			return (1);
+			return (data->redirection_file);
 		close(fd);
 	}
-	return (0);
+	return (NULL);
 }
 
 void	apply_redirection(t_data *redir)

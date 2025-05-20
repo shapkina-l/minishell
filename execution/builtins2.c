@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   builtins2.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lshapkin <lshapkin@student.42.fr>          +#+  +:+       +#+        */
+/*   By: lshapkin <lshapkin@student.42berlin.de>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/12 19:01:51 by lshapkin          #+#    #+#             */
-/*   Updated: 2025/05/15 13:59:04 by lshapkin         ###   ########.fr       */
+/*   Updated: 2025/05/20 01:10:46 by lshapkin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -70,7 +70,8 @@ void	sort_envp(char **my_envp)
 		j = i + 1;
 		while (my_envp[j])
 		{
-			if (ft_strncmp(my_envp[i], my_envp[j], ft_strlen(my_envp[i]) + 1) > 0)
+			if (ft_strncmp(my_envp[i], my_envp[j],
+					ft_strlen(my_envp[i]) + 1) > 0)
 			{
 				tmp = my_envp[i];
 				my_envp[i] = my_envp[j];
@@ -102,8 +103,8 @@ int	ft_export_var_create(char *new_var, t_data *data)
 	if (!dup_var)
 		return (free(new_envp), -1);
 	insert_pos = 0;
-	while (insert_pos < len && ft_strncmp(data->my_envp[insert_pos], 
-		dup_var, ft_strlen(data->my_envp[insert_pos]) + 1) < 0)
+	while (insert_pos < len && ft_strncmp(data->my_envp[insert_pos],
+			dup_var, ft_strlen(data->my_envp[insert_pos]) + 1) < 0)
 		insert_pos++;
 	i = 0;
 	while (i < insert_pos)
@@ -137,7 +138,7 @@ int	ft_export_loop(t_data *data, int i, int var_exists)
 		if (equals_pos)
 			*equals_pos = '\0';
 		if (!is_valid_identifier(var_name))
-			return (print_error("export", "not a valid identifier"), 
+			return (print_error("export", "not a valid identifier"),
 				free(var_name), 1);
 		free(var_name);
 		if (ft_strchr(data->args[i], '='))

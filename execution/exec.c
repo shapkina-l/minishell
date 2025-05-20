@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   exec.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lshapkin <lshapkin@student.42.fr>          +#+  +:+       +#+        */
+/*   By: lshapkin <lshapkin@student.42berlin.de>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/05 16:43:30 by lshapkin          #+#    #+#             */
-/*   Updated: 2025/05/15 14:09:36 by lshapkin         ###   ########.fr       */
+/*   Updated: 2025/05/20 01:57:46 by lshapkin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -88,12 +88,14 @@ int	execute_redirection(t_data *data, int *ret, int *exit_status)
 {
 	t_data	*command_node;
 	int		pid;
+	char	*check;
 
 	command_node = get_command_node(data);
 	if (!command_node)
 		return (1);
-	if (check_all_files(data))
-		return (perror(data->redirection_file), 1);
+	check = check_all_files(data);
+	if (check != NULL)
+		return (perror(check), 1);
 	apply_redirections(data);
 	if (command_node->type == EXECUTION)
 		*ret = exec(command_node);

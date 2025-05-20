@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   minishell.h                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lshapkin <lshapkin@student.42.fr>          +#+  +:+       +#+        */
+/*   By: lshapkin <lshapkin@student.42berlin.de>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/05 16:30:03 by lshapkin          #+#    #+#             */
-/*   Updated: 2025/05/15 14:26:12 by lshapkin         ###   ########.fr       */
+/*   Updated: 2025/05/20 02:03:04 by lshapkin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -155,7 +155,8 @@ void	*ft_realloc(void *ptr, size_t old_size, size_t new_size);
 void	my_shell_handler(int signum);
 void	reset_redirections(int original_stdin, int original_stdout);
 void	skip_whitespaces(char **input);
-int		handle_env_var(char **input, char *buffer, int buf_index, char **my_envp);
+int		handle_env_var(char **input, char *buffer,
+			int buf_index, char **my_envp);
 t_data	*parse_pipe(t_token *token, char **my_envp);
 t_data	*parse_command(t_token *token, char **my_envp);
 t_data	*parse_redirection(t_token *token, t_data *cmd_node, char **my_envp);
@@ -174,7 +175,7 @@ void	free_envp(char **envp);
 void	free_token_list(t_token *head);
 void	exec_child_access_check(t_data *data);
 int		pipes(t_data *data, int *exit_status);
-int		check_all_files(t_data *data);
+char	*check_all_files(t_data *data);
 void	apply_redirections(t_data *data);
 int		has_output_redirection(t_data *data);
 int		has_input_redirection(t_data *data);
@@ -183,7 +184,8 @@ t_token	*tokenize_operator(char **input);
 t_token	*tokenize_word(char **input, int *exit_status, char **my_envp);
 int		process_all_heredocs(t_data *node, int *exit_status, char **my_envp);
 void	handle_heredoc_signal(int sig);
-void	process_heredoc_lines(int fd, const char *delimiter, int *exit_status, char **my_envp);
+void	process_heredoc_lines(int fd, const char *delimiter,
+			int *exit_status, char **my_envp);
 int		prepare_heredoc(t_data *data, char **temp_file,
 			char **delimiter);
 int		handle_fork_error(char *temp_file, char *delimiter);

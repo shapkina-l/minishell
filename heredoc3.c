@@ -6,7 +6,7 @@
 /*   By: lshapkin <lshapkin@student.42berlin.de>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/06 19:18:48 by lshapkin          #+#    #+#             */
-/*   Updated: 2025/05/07 23:26:45 by lshapkin         ###   ########.fr       */
+/*   Updated: 2025/05/20 01:31:53 by lshapkin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -80,7 +80,7 @@ static void	copy_next_char(t_expand_utils *ctx)
 	ctx->out[ctx->pos++] = ctx->line[ctx->idx++];
 }
 
-char	*expand_vars_in_line(const char *line, int exit_status, char ** my_envp)
+char	*expand_vars_in_line(const char *line, int exit_status, char **my_envp)
 {
 	t_expand_utils	ctx;
 

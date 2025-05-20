@@ -6,7 +6,7 @@
 /*   By: lshapkin <lshapkin@student.42berlin.de>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/23 19:27:54 by lshapkin          #+#    #+#             */
-/*   Updated: 2025/05/07 21:22:20 by lshapkin         ###   ########.fr       */
+/*   Updated: 2025/05/20 01:10:01 by lshapkin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,8 +56,8 @@ void	process_heredoc_lines(int fd, const char *delimiter,
 	while (1)
 	{
 		line = readline("> ");
-		if (!line || (g_shell_state & (1 << 1)) || 
-			ft_strcmp(line, delimiter) == 0)
+		if (!line || (g_shell_state & (1 << 1))
+			|| ft_strcmp(line, delimiter) == 0)
 		{
 			free(line);
 			break ;
