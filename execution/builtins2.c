@@ -3,32 +3,14 @@
 /*                                                        :::      ::::::::   */
 /*   builtins2.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lshapkin <lshapkin@student.42berlin.de>    +#+  +:+       +#+        */
+/*   By: lshapkin <lshapkin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/12 19:01:51 by lshapkin          #+#    #+#             */
-/*   Updated: 2025/05/20 01:10:46 by lshapkin         ###   ########.fr       */
+/*   Updated: 2025/05/21 14:37:33 by lshapkin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../minishell.h"
-
-int	is_valid_identifier(char *name)
-{
-	int	i;
-
-	if (!name || !*name)
-		return (0);
-	if (!ft_isalpha(name[0]) && name[0] != '_')
-		return (0);
-	i = 1;
-	while (name[i] && name[i] != '=')
-	{
-		if (!ft_isalnum(name[i]) && name[i] != '_')
-			return (0);
-		i++;
-	}
-	return (1);
-}
 
 int	ft_export_var_exists(char *new_var, char *envp[])
 {
@@ -58,50 +40,12 @@ int	ft_export_var_exists(char *new_var, char *envp[])
 	return (0);
 }
 
-void	sort_envp(char **my_envp)
+void	ft_export_var_create_p2(int len, t_data *data,
+		char	*dup_var, char	**new_envp)
 {
-	int		i;
-	int		j;
-	char	*tmp;
-
-	i = 0;
-	while (my_envp && my_envp[i])
-	{
-		j = i + 1;
-		while (my_envp[j])
-		{
-			if (ft_strncmp(my_envp[i], my_envp[j],
-					ft_strlen(my_envp[i]) + 1) > 0)
-			{
-				tmp = my_envp[i];
-				my_envp[i] = my_envp[j];
-				my_envp[j] = tmp;
-			}
-			j++;
-		}
-		i++;
-	}
-}
-
-int	ft_export_var_create(char *new_var, t_data *data)
-{
-	int		len;
-	char	**new_envp;
-	char	*dup_var;
-	int		i;
 	int		insert_pos;
+	int		i;
 
-	if (!data->my_envp)
-		return (-1);
-	len = 0;
-	while (data->my_envp && (data->my_envp)[len])
-		len++;
-	new_envp = malloc(sizeof(char *) * (len + 2));
-	if (!new_envp)
-		return (-1);
-	dup_var = ft_strdup(new_var);
-	if (!dup_var)
-		return (free(new_envp), -1);
 	insert_pos = 0;
 	while (insert_pos < len && ft_strncmp(data->my_envp[insert_pos],
 			dup_var, ft_strlen(data->my_envp[insert_pos]) + 1) < 0)
@@ -121,6 +65,26 @@ int	ft_export_var_create(char *new_var, t_data *data)
 		i++;
 	}
 	new_envp[i] = NULL;
+}
+
+int	ft_export_var_create(char *new_var, t_data *data)
+{
+	int		len;
+	char	**new_envp;
+	char	*dup_var;
+
+	if (!data->my_envp)
+		return (-1);
+	len = 0;
+	while (data->my_envp && (data->my_envp)[len])
+		len++;
+	new_envp = malloc(sizeof(char *) * (len + 2));
+	if (!new_envp)
+		return (-1);
+	dup_var = ft_strdup(new_var);
+	if (!dup_var)
+		return (free(new_envp), -1);
+	ft_export_var_create_p2(len, data, dup_var, new_envp);
 	return (free(data->my_envp), data->my_envp = new_envp, 0);
 }
 

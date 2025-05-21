@@ -6,7 +6,7 @@
 /*   By: lshapkin <lshapkin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/03 15:24:27 by lshapkin          #+#    #+#             */
-/*   Updated: 2025/05/15 14:00:33 by lshapkin         ###   ########.fr       */
+/*   Updated: 2025/05/21 14:44:48 by lshapkin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -72,4 +72,22 @@ int	ft_exit(t_data *data, int *exit_status)
 	}
 	code = ft_atol(data->args[1]);
 	exit((unsigned char)code);
+}
+
+int	is_valid_identifier(char *name)
+{
+	int	i;
+
+	if (!name || !*name)
+		return (0);
+	if (!ft_isalpha(name[0]) && name[0] != '_')
+		return (0);
+	i = 1;
+	while (name[i] && name[i] != '=')
+	{
+		if (!ft_isalnum(name[i]) && name[i] != '_')
+			return (0);
+		i++;
+	}
+	return (1);
 }

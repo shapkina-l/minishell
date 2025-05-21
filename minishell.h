@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   minishell.h                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lshapkin <lshapkin@student.42berlin.de>    +#+  +:+       +#+        */
+/*   By: lshapkin <lshapkin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/05 16:30:03 by lshapkin          #+#    #+#             */
-/*   Updated: 2025/05/20 02:03:04 by lshapkin         ###   ########.fr       */
+/*   Updated: 2025/05/21 14:30:27 by lshapkin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -201,5 +201,7 @@ void	builtin_in_redirection(t_data *command_node,
 			int *exit_status, int *ret, int pid);
 void	reset_redir_and_cleanup_heredoc(t_data *root);
 char	*get_env_value(const char *name, char **my_envp);
+void	sort_envp(char **my_envp);
+int		is_valid_identifier(char *name);
 
 #endif
