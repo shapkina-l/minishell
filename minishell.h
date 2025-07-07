@@ -6,7 +6,7 @@
 /*   By: lshapkin <lshapkin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/05 16:30:03 by lshapkin          #+#    #+#             */
-/*   Updated: 2025/05/21 14:30:27 by lshapkin         ###   ########.fr       */
+/*   Updated: 2025/05/21 17:48:17 by lshapkin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -199,7 +199,7 @@ long	ft_atol(const char *str);
 int		is_numeric(char *str);
 void	builtin_in_redirection(t_data *command_node,
 			int *exit_status, int *ret, int pid);
-void	reset_redir_and_cleanup_heredoc(t_data *root);
+char	**reset_redir_and_cleanup_heredoc(t_data *root, char **my_envp);
 char	*get_env_value(const char *name, char **my_envp);
 void	sort_envp(char **my_envp);
 int		is_valid_identifier(char *name);

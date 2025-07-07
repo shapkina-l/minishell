@@ -6,7 +6,7 @@
 /*   By: lshapkin <lshapkin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/07 21:30:23 by lshapkin          #+#    #+#             */
-/*   Updated: 2025/05/21 14:24:37 by lshapkin         ###   ########.fr       */
+/*   Updated: 2025/05/21 17:48:03 by lshapkin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,10 +37,12 @@ char	*ft_readline(void)
 	return (input);
 }
 
-void	reset_redir_and_cleanup_heredoc(t_data *root)
+char	**reset_redir_and_cleanup_heredoc(t_data *root, char **my_envp)
 {
 	reset_redirections(root->original_stdin, root->original_stdout);
 	cleanup_heredoc_files(root);
+	my_envp = root->my_envp;
+	return (my_envp);
 }
 
 void	sort_envp(char **my_envp)

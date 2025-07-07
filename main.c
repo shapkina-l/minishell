@@ -6,7 +6,7 @@
 /*   By: lshapkin <lshapkin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/16 15:16:26 by lshapkin          #+#    #+#             */
-/*   Updated: 2025/05/21 15:01:45 by lshapkin         ###   ########.fr       */
+/*   Updated: 2025/05/21 17:52:41 by lshapkin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -68,7 +68,7 @@ void	free_exec(t_data *data)
 	free(data);
 }
 
-void	main_loop(t_data *root, int *last_exit_status, char **my_envp)
+char	**main_loop(t_data *root, int *last_exit_status, char **my_envp)
 {
 	char	*input;
 
@@ -90,11 +90,11 @@ void	main_loop(t_data *root, int *last_exit_status, char **my_envp)
 			continue ;
 		}
 		*last_exit_status = execute(root, last_exit_status);
-		reset_redir_and_cleanup_heredoc(root);
-		my_envp = root->my_envp;
+		my_envp = reset_redir_and_cleanup_heredoc(root, my_envp);
 		free(input);
 		free_exec(root);
 	}
+	return (my_envp);
 }
 
 int	main(int argc, char **argv, char *envp[])
@@ -115,7 +115,7 @@ int	main(int argc, char **argv, char *envp[])
 		printf("Failed to initialize environment.\n");
 		return (1);
 	}
-	main_loop(root, &last_exit_status, my_envp);
+	my_envp = main_loop(root, &last_exit_status, my_envp);
 	free_envp(my_envp);
 	rl_clear_history();
 	return (last_exit_status);

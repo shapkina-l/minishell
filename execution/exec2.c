@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   exec2.c                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lshapkin <lshapkin@student.42berlin.de>    +#+  +:+       +#+        */
+/*   By: lshapkin <lshapkin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/03 22:37:41 by lshapkin          #+#    #+#             */
-/*   Updated: 2025/05/06 18:30:02 by lshapkin         ###   ########.fr       */
+/*   Updated: 2025/05/21 17:35:38 by lshapkin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,7 +43,7 @@ void	pipes_left_child(t_pipes_utils *utils, t_data *data,
 	{
 		signal(SIGINT, SIG_DFL);
 		signal(SIGQUIT, SIG_DFL);
-		signal(SIGPIPE, SIG_DFL);
+		signal(SIGPIPE, SIG_IGN);
 		if (!has_output_redirection(data->left))
 			dup2(fd[1], STDOUT_FILENO);
 		close_fd(fd);
@@ -63,7 +63,7 @@ void	pipes_right_child(t_pipes_utils *utils, t_data *data,
 	{
 		signal(SIGINT, SIG_DFL);
 		signal(SIGQUIT, SIG_DFL);
-		signal(SIGPIPE, SIG_DFL);
+		signal(SIGPIPE, SIG_IGN);
 		if (!has_input_redirection(data->right))
 			dup2(fd[0], STDIN_FILENO);
 		close_fd(fd);
